@@ -2,30 +2,27 @@
 
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/vehicles/protos/bmw/BmwX5.proto"
 IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/road/protos/AddLanesRoadSegment.proto"
 IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/traffic/protos/CrossRoadsTrafficLight.proto"
 IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/road/protos/AddLaneRoadSegment.proto"
 IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/road/protos/CurvedRoadSegment.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/devices/sick/protos/SickLms291.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/road/protos/HelicoidalRoadSegment.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/appearances/protos/Parquetry.proto"
 
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.20724079381929955 -0.786589540495173 -0.581659821683378 5.432549372154118
-  position -17.171947073619602 -13.864725031254487 21.59003346269923
+  orientation -0.4803225806895244 -0.19935688980428012 0.8541352638589039 3.8229672772019283
+  position -2.3077002635852697 23.144672467825593 33.01944915356464
 }
 TexturedBackground {
 }
 TexturedBackgroundLight {
 }
-RectangleArena {
-  floorSize 100 100
-}
 BmwX5 {
-  translation 0 0 1
+  translation -29 12 1
   color 0.1 0.11 0.5
   controller "Hondaodyssey"
   controllerArgs [
@@ -38,14 +35,24 @@ BmwX5 {
   ]
   sensorsSlotTop [
     Camera {
+      translation 2 0 0
+      rotation 0 0 1 -0.2
     }
   ]
+}
+RectangleArena {
+  floorSize 100 100
+  floorTileSize 13 3.4
+  floorAppearance Parquetry {
+    type "dark strip"
+  }
 }
 CurvedRoadSegment {
   translation -12 0 0.05
   name "road(1)"
 }
-HelicoidalRoadSegment {
-  translation -4 -15 -1
+AddLaneRoadSegment {
+  translation -30 10 0.05
+  name "road(2)"
   roadBoundingObject TRUE
 }

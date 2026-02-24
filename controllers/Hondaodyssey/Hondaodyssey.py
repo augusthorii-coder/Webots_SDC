@@ -83,17 +83,73 @@ while driver.step() != -1:
             current_steering = -TURN_ANGLE
         elif right:
             current_steering = TURN_ANGLE
-    
+
     else:
         #the AUTOPILOT area
-        current_speed = 30.0 # Constant cruising speed
+        current_speed = 10.0 # Constant cruising speed
             
         if camera is not None:
             image = camera.getImageArray()
             width = camera.getWidth()
             height = camera.getHeight()
-            left_line_pixels = 0
-            right_line_pixels = 0
+            sum_x = 0
+            pixel_count = 0
+            
+            #Scan the bottom section of the screen
+            start_y = int(height * 0.6)
+            end_y = int(height * 0.9)
+            
+            for y in range(start_y, end_y, 2):
+                for x in range(0, width, 2):
+                    #Finding the pixel colors:
+                    r, g, b = image[x][y]
+                    brightness = r + g + b
+                    
+                    #if the pixels are very bright:
+                    if brightness > 400: 
+                        sum_x += x
+                        pixel_count += 1
+            
+            #left lane keeping logic
+            if pixel_count > 10:
+                average_x = sum_x / pixel_count
+                target_x = width * 0.7 
+                
+                error = (average_x - target_x) / width #Error = how far it is from the center
+                
+                #to steer towards the area smoothly:
+                p_term = error * 2.0
+                d_term = (error - last_error) * 5.0
+                current_steering = p_term + d_term
+                
+                last_error = error
+            else:
+                pass
+    #Safety clamp for the Honda steering limits
+    if current_steering > 0.5:
+        current_steering = 0.5
+    elif current_steering < -0.5:
+        current_steering = -0.5
+        
+    driver.setCruisingSpeed(current_speed)
+    driver.setSteeringAngle(current_steering)
+
+
+
+
+
+"""
+    else:
+        #the AUTOPILOT area
+        #JUST LANE KEEPING FOR NOW
+        current_speed = 20.0 # Constant cruising speed
+            
+        if camera is not None:
+            image = camera.getImageArray()
+            width = camera.getWidth()
+            height = camera.getHeight()
+            sum_x = 0
+            pixel_count = 0
             y = int(height * 0.8)
             
             for x in range(width):
@@ -102,25 +158,24 @@ while driver.step() != -1:
                 brightness = r + g + b
                 
                 #if the pixels are very bright:
-                if brightness > 600: 
-                    if x < width / 2:
-                        left_line_pixels += 1
-                    else:
-                        right_line_pixels += 1
+                if brightness > 400: 
+                    sum_x += x
+                    pixel_count += 1
             
             #left lane keeping logic
-            if left_line_pixels > right_line_pixels: 
-                current_steering = 0.15 #steer right
-            elif right_line_pixels > left_line_pixels:
-                current_steering = -0.15 #steer left
+            if pixel_count > 0:
+                average_x = sum_x / pixel_count
+                center_of_screen = width / 2 
+                error = (average_x - center_of_screen) / width #Error = how far it is from the center
+                #to steer towards the area:
+                current_steering = error * 2
             else:
-                current_steering = 0.0 #go straight
-     
-     
+                current_steering = 0.0
+                print(f"I see {pixel_count} bright pixels. Steering: {current_steering}")
         
     driver.setCruisingSpeed(current_speed)
     driver.setSteeringAngle(current_steering)
-       
+"""
        
 """
     elif up and right:
