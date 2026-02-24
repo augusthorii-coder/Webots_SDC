@@ -41,7 +41,7 @@ else:
 #to start in manual mode:
 current_speed = 0.0
 autodrive = False
-
+last_error = 0.0
 print("Press A to start the AUTOPILOT")
 
 #Main Loop
@@ -98,7 +98,8 @@ while driver.step() != -1:
             #Scan the bottom section of the screen
             start_y = int(height * 0.6)
             end_y = int(height * 0.9)
-            
+            #STOP GOING TO THE LEFT
+            start_x = int(width * 0.4)
             for y in range(start_y, end_y, 2):
                 for x in range(0, width, 2):
                     #Finding the pixel colors:
@@ -111,9 +112,9 @@ while driver.step() != -1:
                         pixel_count += 1
             
             #left lane keeping logic
-            if pixel_count > 10:
+            if pixel_count > 0:
                 average_x = sum_x / pixel_count
-                target_x = width * 0.7 
+                target_x = width * 0.85 
                 
                 error = (average_x - target_x) / width #Error = how far it is from the center
                 
@@ -125,6 +126,7 @@ while driver.step() != -1:
                 last_error = error
             else:
                 pass
+            print(f"I see {pixel_count} pixels. Steering: {current_steering}")
     #Safety clamp for the Honda steering limits
     if current_steering > 0.5:
         current_steering = 0.5
