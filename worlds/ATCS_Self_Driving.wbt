@@ -37,6 +37,7 @@ BmwX5 {
     Camera {
       translation 2 0 0
       rotation 0 0 1 -0.2
+      fieldOfView 0.75
     }
   ]
 }
@@ -54,5 +55,8 @@ CurvedRoadSegment {
 AddLaneRoadSegment {
   translation -30 10 0.05
   name "road(2)"
+  width 8
+  newLaneLeft FALSE
+  roadBorderWidth 0.5
   roadBoundingObject TRUE
 }

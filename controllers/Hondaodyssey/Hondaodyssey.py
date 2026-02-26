@@ -42,6 +42,7 @@ else:
 current_speed = 0.0
 autodrive = False
 last_error = 0.0
+last_steering = 0.0
 print("Press A to start the AUTOPILOT")
 
 #Main Loop
@@ -96,7 +97,7 @@ while driver.step() != -1:
             pixel_count = 0
             
             #Scan the bottom section of the screen
-            start_y = int(height * 0.6)
+            start_y = int(height * 0.4)
             end_y = int(height * 0.9)
             #STOP GOING TO THE LEFT
             start_x = int(width * 0.4)
@@ -119,14 +120,95 @@ while driver.step() != -1:
                 error = (average_x - target_x) / width #Error = how far it is from the center
                 
                 #to steer towards the area smoothly:
-                p_term = error * 2.0
-                d_term = (error - last_error) * 5.0
+                p_term = error * 3.0
+                d_term = (error - last_error) * 10.0
                 current_steering = p_term + d_term
                 
                 last_error = error
+                last_steering = current_steering
             else:
-                pass
+                #FIND THE LINE TWIN
+                if last_error > 0:
+                    current_steering = -0.5
+                elif last_error < 0:
+                    current_steering = 0.5
+                else:
+                    current_steering = 0.0
             print(f"I see {pixel_count} pixels. Steering: {current_steering}")
+    #Safety clamp for the Honda steering limits
+    if last_error > 0.15:       
+        current_steering = 0.5
+    elif last_error < -0.15:
+        current_steering = -0.5
+    elif last_steering > 0.1:
+        current_steering = 0.5
+    elif last_steering < -0.1:
+        current_steering = -0.5
+    else:
+        current_steering = 0.0
+        
+    driver.setCruisingSpeed(current_speed)
+    driver.setSteeringAngle(current_steering)
+
+
+
+"""
+
+current_speed = 10.0 # Constant cruising speed
+            
+        if camera is not None:
+            image = camera.getImageArray()
+            width = camera.getWidth()
+            height = camera.getHeight()
+            sum_x = 0
+            pixel_count = 0
+            far_sum_x = 0; far_pixels = 0
+            near_sum_x = 0; near_pixels = 0
+            
+            
+            #Scan the bottom section of the screen
+            start_y = int(height * 0.5)
+            end_y = int(height * 0.9)
+            #STOP GOING TO THE LEFT
+            start_x = int(width * 0.4)
+            for y in range(start_y, end_y, 2):
+                for x in range(start_x, width, 2):
+                    #Finding the pixel colors:
+                    r, g, b = image[x][y]
+                    brightness = r + g + b
+                    
+                    #if the pixels are very bright:
+                    if brightness > 400: 
+                        if y < height * 0.7:  
+                            far_sum_x += x
+                            far_pixels += 1
+                        else:                 
+                            near_sum_x += x
+                            near_pixels += 1
+            
+            #left lane keeping logic
+            if pixel_count > 0:
+                near_x = near_sum_x / near_pixels
+                target_x = width * 0.85 
+                
+                error = (near_x - target_x) / width #Error = how far it is from the center
+                
+                #to steer towards the area smoothly:
+                p_term = error * 2.0
+                d_term = (error - last_error) * 5.0
+                curve_error = 0.0
+                if far_pixels > 0:
+                    far_x = far_sum_x / far_pixels
+                    curve_error = (far_x - near_x) / width
+                
+                # Combine normal steering with curve anticipation
+                current_steering = p_term + d_term + (curve_error * 3.0)
+                
+                last_error = base_error
+            else:
+                current_steering = 0.0
+            print(f"I see {pixel_count} pixels. Steering: {current_steering}")
+            
     #Safety clamp for the Honda steering limits
     if current_steering > 0.5:
         current_steering = 0.5
@@ -136,9 +218,7 @@ while driver.step() != -1:
     driver.setCruisingSpeed(current_speed)
     driver.setSteeringAngle(current_steering)
 
-
-
-
+"""
 
 """
     else:
