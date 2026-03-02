@@ -102,13 +102,19 @@ while driver.step() != -1:
             #STOP GOING TO THE LEFT
             start_x = int(width * 0.4)
             for y in range(start_y, end_y, 2):
-                for x in range(0, width, 2):
+                for x in range(start_x, width, 2):
                     #Finding the pixel colors:
                     r, g, b = image[x][y]
                     brightness = r + g + b
                     
                     #if the pixels are very bright:
-                    if brightness > 400: 
+                    r_prev, g_prev, b_prev = image[x-2][y]
+                    prev_brightness = r_prev + g_prev + b_prev
+                    
+                    edge_strength = abs(brightness - prev_brightness)
+                    
+                    #if the pixels are very bright:
+                    if edge_strength > 150 and brightness > 350: 
                         sum_x += x
                         pixel_count += 1
             
@@ -129,23 +135,17 @@ while driver.step() != -1:
             else:
                 #FIND THE LINE TWIN
                 if last_error > 0:
-                    current_steering = -0.5
-                elif last_error < 0:
                     current_steering = 0.5
+                elif last_error < 0:
+                    current_steering = -0.5
                 else:
                     current_steering = 0.0
             print(f"I see {pixel_count} pixels. Steering: {current_steering}")
     #Safety clamp for the Honda steering limits
-    if last_error > 0.15:       
+    if current_steering > 0.5:
         current_steering = 0.5
-    elif last_error < -0.15:
+    elif current_steering < -0.5:
         current_steering = -0.5
-    elif last_steering > 0.1:
-        current_steering = 0.5
-    elif last_steering < -0.1:
-        current_steering = -0.5
-    else:
-        current_steering = 0.0
         
     driver.setCruisingSpeed(current_speed)
     driver.setSteeringAngle(current_steering)

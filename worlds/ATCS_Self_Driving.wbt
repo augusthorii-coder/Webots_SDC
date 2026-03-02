@@ -10,19 +10,29 @@ IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R20
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/devices/sick/protos/SickLms291.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/appearances/protos/Parquetry.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/buildings/protos/BuildingUnderConstruction.proto"
 
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.4803225806895244 -0.19935688980428012 0.8541352638589039 3.8229672772019283
-  position -2.3077002635852697 23.144672467825593 33.01944915356464
+  orientation -0.24290850045941614 -0.23013783579860503 0.9423545176516598 4.599262616355497
+  position -2.9499768696400057 79.18376027265087 44.04543858250517
 }
 TexturedBackground {
 }
 TexturedBackgroundLight {
 }
 BmwX5 {
-  translation -29 12 1
+  hidden translation_1 0 0 0
+  hidden rotation_1 -0.21626835533846048 -0.958125769619051 -0.18767793709197247 1.7543261090787634
+  hidden translation_2 0 0 0
+  hidden rotation_2 0.2686947708242287 0.9164125705103117 -0.29663297312065334 1.5591656607999085
+  hidden translation_3 0 0 0
+  hidden rotation_3 0 -1 0 1.4281522173986243
+  hidden translation_4 0 0 0
+  hidden rotation_4 0 1 0 1.04790439651145
+  translation -28.54312763547257 11.977791532638902 0.11944782243001544
+  rotation -0.0028616811395229523 -0.20310633967419742 -0.9791525037322864 0.08927767662815012
   color 0.1 0.11 0.5
   controller "Hondaodyssey"
   controllerArgs [
@@ -41,6 +51,9 @@ BmwX5 {
     }
   ]
 }
+BuildingUnderConstruction {
+  translation -19 -2 0
+}
 RectangleArena {
   floorSize 100 100
   floorTileSize 13 3.4
@@ -53,7 +66,7 @@ CurvedRoadSegment {
   name "road(1)"
 }
 AddLaneRoadSegment {
-  translation -30 10 0.05
+  translation -32 10 0.05
   name "road(2)"
   width 8
   newLaneLeft FALSE
