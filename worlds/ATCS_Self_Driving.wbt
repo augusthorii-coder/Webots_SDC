@@ -10,28 +10,20 @@ IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R20
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/devices/sick/protos/SickLms291.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/appearances/protos/Parquetry.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/buildings/protos/BuildingUnderConstruction.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/buildings/protos/BigGlassTower.proto"
 
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.24290850045941614 -0.23013783579860503 0.9423545176516598 4.599262616355497
-  position -2.9499768696400057 79.18376027265087 44.04543858250517
+  orientation -0.48545176423896086 -0.4287129096106299 0.7619329535664331 4.326181287870476
+  position -1.7238123993856043 46.737603708958495 82.26444152641953
 }
 TexturedBackground {
 }
 TexturedBackgroundLight {
 }
 BmwX5 {
-  hidden translation_1 0 0 0
-  hidden rotation_1 -0.21626835533846048 -0.958125769619051 -0.18767793709197247 1.7543261090787634
-  hidden translation_2 0 0 0
-  hidden rotation_2 0.2686947708242287 0.9164125705103117 -0.29663297312065334 1.5591656607999085
-  hidden translation_3 0 0 0
-  hidden rotation_3 0 -1 0 1.4281522173986243
-  hidden translation_4 0 0 0
-  hidden rotation_4 0 1 0 1.04790439651145
-  translation -28.54312763547257 11.977791532638902 0.11944782243001544
+  translation -28.5657 11.9792 1.35924
   rotation -0.0028616811395229523 -0.20310633967419742 -0.9791525037322864 0.08927767662815012
   color 0.1 0.11 0.5
   controller "Hondaodyssey"
@@ -47,12 +39,9 @@ BmwX5 {
     Camera {
       translation 2 0 0
       rotation 0 0 1 -0.2
-      fieldOfView 0.75
+      fieldOfView 0.85
     }
   ]
-}
-BuildingUnderConstruction {
-  translation -19 -2 0
 }
 RectangleArena {
   floorSize 100 100
@@ -72,4 +61,7 @@ AddLaneRoadSegment {
   newLaneLeft FALSE
   roadBorderWidth 0.5
   roadBoundingObject TRUE
+}
+BigGlassTower {
+  translation -18.15 2.75 0
 }

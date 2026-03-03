@@ -97,31 +97,25 @@ while driver.step() != -1:
             pixel_count = 0
             
             #Scan the bottom section of the screen
-            start_y = int(height * 0.4)
+            start_y = int(height * 0.6)
             end_y = int(height * 0.9)
             #STOP GOING TO THE LEFT
-            start_x = int(width * 0.4)
             for y in range(start_y, end_y, 2):
-                for x in range(start_x, width, 2):
+                for x in range(int(width * 0.5), width, 2): # Look at the WHOLE road
                     #Finding the pixel colors:
                     r, g, b = image[x][y]
                     brightness = r + g + b
-                    
                     #if the pixels are very bright:
-                    r_prev, g_prev, b_prev = image[x-2][y]
-                    prev_brightness = r_prev + g_prev + b_prev
+                    is_white = brightness > 400 and abs(r - g) < 60 
+                    is_yellow = r > 160 and g > 130 and b < 100 and (r - b) > 60
                     
-                    edge_strength = abs(brightness - prev_brightness)
-                    
-                    #if the pixels are very bright:
-                    if edge_strength > 150 and brightness > 350: 
+                    if is_white or is_yellow:
                         sum_x += x
                         pixel_count += 1
-            
             #left lane keeping logic
-            if pixel_count > 0:
+            if pixel_count > 6:
                 average_x = sum_x / pixel_count
-                target_x = width * 0.85 
+                target_x = width * 0.75 
                 
                 error = (average_x - target_x) / width #Error = how far it is from the center
                 
@@ -130,22 +124,20 @@ while driver.step() != -1:
                 d_term = (error - last_error) * 10.0
                 current_steering = p_term + d_term
                 
+                turn_factor = 1.0 - abs(current_steering) * 1.2
+                current_speed = max(5.0, 20.0 * turn_factor)
+                
                 last_error = error
                 last_steering = current_steering
+                driver.setBrakeIntensity(0.0)
             else:
                 #FIND THE LINE TWIN
-                if last_error > 0:
-                    current_steering = 0.5
-                elif last_error < 0:
-                    current_steering = -0.5
-                else:
-                    current_steering = 0.0
+                driver.setBrakeIntensity(0.2)
+                current_steering = last_steering
+                current_speed = 4.0
             print(f"I see {pixel_count} pixels. Steering: {current_steering}")
     #Safety clamp for the Honda steering limits
-    if current_steering > 0.5:
-        current_steering = 0.5
-    elif current_steering < -0.5:
-        current_steering = -0.5
+    current_steering = max(-0.5, min(0.5, current_steering))
         
     driver.setCruisingSpeed(current_speed)
     driver.setSteeringAngle(current_steering)
