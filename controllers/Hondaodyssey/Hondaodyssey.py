@@ -98,7 +98,7 @@ while driver.step() != -1:
             pixel_count = 0
             
             #Scan the bottom section of the screen
-            start_y = int(height * 0.8)
+            start_y = 0
             end_y = height
             #STOP GOING TO THE LEFT
             for y in range(start_y, end_y, 2):
@@ -115,11 +115,11 @@ while driver.step() != -1:
                         sum_x += x
                         pixel_count += 1
             #left lane keeping logic
-            if pixel_count > 5:
+            if pixel_count > 0:
                 average_x = sum_x / pixel_count
                 target_x = width * 0.2  
                 
-                error = (average_x - target_x) / width 
+                error = (target_x - average_x) / width 
                 
                 if (error > 0) != (last_error > 0):
                     integral = 0.0
@@ -142,8 +142,8 @@ while driver.step() != -1:
             else:
             #FIND THE LINEEEEE
                 driver.setBrakeIntensity(0.0)
-                current_steering = 0.0 # Straighten the wheel so it doesn't swerve
-                current_speed = 10.0 # Keep rolling forward
+                current_steering = 0.3 # Straighten the wheel so it doesn't swerve
+                current_speed = 20.0 # Keep rolling forward
                 
             print(f"I see {pixel_count} pixels. Steering: {current_steering}")
     #Safety clamp for the Honda steering limits
