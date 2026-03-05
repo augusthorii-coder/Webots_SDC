@@ -38,6 +38,9 @@ if camera is not None:
 else:
     print("Your camera is NOT plugged in Twin")
 
+
+
+
 #to start in manual mode:
 current_speed = 0.0
 autodrive = False
@@ -146,6 +149,35 @@ while driver.step() != -1:
                 current_speed = 20.0 # Keep rolling forward
                 
             print(f"I see {pixel_count} pixels. Steering: {current_steering}")
+            
+            # -----------------------------------------------------
+            # TIME FOR SAFTEY ATTRIBUTES
+            # _____________________________________________________
+            obstacle_detected = False 
+            
+            if lidar is not None:
+                range_image = lidar.getRangeImage()
+                lidar_width = lidar.getHorizontalResolution()
+                
+                #Only Checking the objects that are infront of the car / the middle 20%
+                center_start = int(lidar_width * 0.4)
+                center_end = int(lidar_width * 0.6)
+                
+                for i in range(center_start, center_end):
+                    distance = range_image[i]
+                    #If the object is less that or equal to 10 meters away from the car
+                    if distance < 5:
+                        obstacle_detected = True
+                        break
+                
+                #override cameraas:
+                if obstacle_detected:
+                    driver.setBrakeIntensity(1.0)
+                    current_speed = 0.0
+                    print("OH MY GOD YOURE ABOUT TO CRASH")
+            #______________________________________________________
+            
+            
     #Safety clamp for the Honda steering limits
     current_steering = max(-0.5, min(0.5, current_steering))
         
