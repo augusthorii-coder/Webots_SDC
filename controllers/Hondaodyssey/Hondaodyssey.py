@@ -137,7 +137,7 @@ while driver.step() != -1:
                 current_steering = p_term + i_term + d_term
                 
                 turn_factor = 1.0 - abs(current_steering) * 1.2
-                current_speed = max(5.0, 20.0 * turn_factor)
+                current_speed = max(15.0, 20.0 * turn_factor)
                 
                 last_error = error
                 last_steering = current_steering
