@@ -11,13 +11,13 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/appearances/protos/Parquetry.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/buildings/protos/BigGlassTower.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/buildings/protos/Auditorium.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/buildings/protos/CommercialBuilding.proto"
 
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.0525389154864761 0.9480621830126381 -0.3137160491604089 0.3391545558750493
-  position -41.231676516420166 13.173047231218758 5.93317809855442
+  orientation -0.010345630799709965 -0.9985255848878639 0.05328812482819512 5.960843824112964
+  position -36.54473846553191 12.025799337233805 4.298706096798185
   follow "vehicle"
   followType "Mounted Shot"
 }
@@ -27,7 +27,7 @@ TexturedBackgroundLight {
 }
 BmwX5 {
   translation -28.5657 11.9792 1.35924
-  rotation -0.0028616811395229523 -0.20310633967419742 -0.9791525037322864 0.08927767662815012
+  rotation -0.0028616813369501406 -0.20310601401226921 -0.9791525712839514 0
   color 0.1 0.11 0.5
   controller "Hondaodyssey"
   controllerArgs [
@@ -40,11 +40,14 @@ BmwX5 {
   ]
   sensorsSlotTop [
     Camera {
-      translation 1 -0.7 0
+      translation 1 -0.8 0
       rotation 0 1 0 0.32359869389957474
       fieldOfView 0.7854
     }
   ]
+}
+CommercialBuilding {
+  translation 0 -30.51 0
 }
 RectangleArena {
   floorSize 100 100
@@ -66,7 +69,7 @@ AddLaneRoadSegment {
   roadBoundingObject TRUE
 }
 AddLaneRoadSegment {
-  translation -2 0 0.05
+  translation -2 0.1 0.05
   rotation 0 0 1 -1.5707996938995747
   name "road(3)"
   width 8
@@ -76,8 +79,4 @@ AddLaneRoadSegment {
 }
 BigGlassTower {
   translation -18.15 2.75 0
-}
-Auditorium {
-  translation -4.06 -36.66 0
-  rotation 0 0 -1 1.5708
 }

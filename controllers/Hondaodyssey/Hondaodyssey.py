@@ -130,9 +130,11 @@ while driver.step() != -1:
                 integral += error
                 integral = max(min(integral, 30.0), -30.0) 
                 
+                
+                #P=Kp * E(t)
                 p_term = error * 3.0
                 i_term = integral * 0.05
-                d_term = (error - last_error) * 10.0
+                d_term = (error - last_error) * 20.0
                 
                 current_steering = p_term + i_term + d_term
                 
@@ -145,12 +147,11 @@ while driver.step() != -1:
             else:
             #FIND THE LINEEEEE
                 driver.setBrakeIntensity(0.0)
-                if last_error < -0.1: 
-                    current_steering = 0.3
-                elif last_error > 0.1:
-                    current_steering = -0.3
+                if abs(last_error) > 0.05:
+                    current_steering = -(last_error * 2.0)
                 else:
                     current_steering = 0.0
+                current_steering = max(-0.4, min(0.4, current_steering))
                      # Straighten the wheel so it doesn't swerve
                 current_speed = 30.0 # Keep rolling forward
                 
