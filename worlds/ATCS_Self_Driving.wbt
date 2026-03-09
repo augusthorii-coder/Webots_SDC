@@ -11,12 +11,13 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/appearances/protos/Parquetry.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/buildings/protos/BigGlassTower.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/buildings/protos/Auditorium.proto"
 
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.05159959207371978 0.9246708355859818 -0.37725499057606643 0.28290911242098504
-  position -36.66500364092332 12.681485599601066 3.9247072634470026
+  orientation 0.0525389154864761 0.9480621830126381 -0.3137160491604089 0.3391545558750493
+  position -41.231676516420166 13.173047231218758 5.93317809855442
   follow "vehicle"
   followType "Mounted Shot"
 }
@@ -64,6 +65,19 @@ AddLaneRoadSegment {
   roadBorderWidth 0.5
   roadBoundingObject TRUE
 }
+AddLaneRoadSegment {
+  translation -2 0 0.05
+  rotation 0 0 1 -1.5707996938995747
+  name "road(3)"
+  width 8
+  newLaneLeft FALSE
+  roadBorderWidth 0.5
+  roadBoundingObject TRUE
+}
 BigGlassTower {
   translation -18.15 2.75 0
+}
+Auditorium {
+  translation -4.06 -36.66 0
+  rotation 0 0 -1 1.5708
 }

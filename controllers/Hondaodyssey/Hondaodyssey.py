@@ -145,8 +145,14 @@ while driver.step() != -1:
             else:
             #FIND THE LINEEEEE
                 driver.setBrakeIntensity(0.0)
-                current_steering = 0.3 # Straighten the wheel so it doesn't swerve
-                current_speed = 20.0 # Keep rolling forward
+                if last_error < -0.1: 
+                    current_steering = 0.3
+                elif last_error > 0.1:
+                    current_steering = -0.3
+                else:
+                    current_steering = 0.0
+                     # Straighten the wheel so it doesn't swerve
+                current_speed = 30.0 # Keep rolling forward
                 
             print(f"I see {pixel_count} pixels. Steering: {current_steering}")
             
