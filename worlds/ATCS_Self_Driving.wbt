@@ -26,7 +26,7 @@ TexturedBackground {
 TexturedBackgroundLight {
 }
 BmwX5 {
-  translation -28.5657 11.9792 1.35924
+  translation -28.4 11.9792 1.35924
   rotation -0.0028616813369501406 -0.20310601401226921 -0.9791525712839514 0
   color 0.1 0.11 0.5
   controller "Hondaodyssey"

@@ -153,7 +153,7 @@ while driver.step() != -1:
                     current_steering = 0.0
                 current_steering = max(-0.4, min(0.4, current_steering))
                      # Straighten the wheel so it doesn't swerve
-                current_speed = 30.0 # Keep rolling forward
+                current_speed = 23.0 # Keep rolling forward
                 
             print(f"I see {pixel_count} pixels. Steering: {current_steering}")
             
