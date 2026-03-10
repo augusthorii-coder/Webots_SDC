@@ -47,6 +47,7 @@ autodrive = False
 last_error = 0.0
 last_steering = 0.0
 integral = 0.0
+print("Use the up/down/left/right buttons to move")
 print("Press A to start the AUTOPILOT")
 
 #Main Loop
@@ -101,11 +102,11 @@ while driver.step() != -1:
             pixel_count = 0
             
             #Scan the bottom section of the screen
-            start_y = 0
+            start_y = int(height * 0.4)
             end_y = height
             #STOP GOING TO THE LEFT
             for y in range(start_y, end_y, 2):
-                for x in range(0, int(width * 0.5), 2): # Look at the WHOLE road
+                for x in range(int(width * 0.5), width, 2):
                     #Finding the pixel colors:
                     r, g, b = image[x][y]
                     brightness = r + g + b
@@ -120,19 +121,19 @@ while driver.step() != -1:
             #left lane keeping logic
             if pixel_count > 0:
                 average_x = sum_x / pixel_count
-                target_x = width * 0.2  
+                target_x = width * 0.7 
                 
-                error = (target_x - average_x) / width 
+                error = (average_x - target_x) / width 
                 
                 if (error > 0) != (last_error > 0):
                     integral = 0.0
                     
                 integral += error
                 integral = max(min(integral, 30.0), -30.0) 
-                
+                integral *= 0.9
                 
                 #P=Kp * E(t)
-                p_term = error * 3.0
+                p_term = error * 2.0
                 i_term = integral * 0.05
                 d_term = (error - last_error) * 20.0
                 
@@ -147,15 +148,17 @@ while driver.step() != -1:
             else:
             #FIND THE LINEEEEE
                 driver.setBrakeIntensity(0.0)
-                if abs(last_error) > 0.05:
-                    current_steering = -(last_error * 2.0)
-                else:
-                    current_steering = 0.0
+                
+                current_steering = last_steering
+                #if abs(last_error) > 0.05:
+                #    current_steering = last_error * 10.0
+                #else:
+                #    current_steering = 0.0
                 current_steering = max(-0.4, min(0.4, current_steering))
                      # Straighten the wheel so it doesn't swerve
-                current_speed = 23.0 # Keep rolling forward
+                current_speed = 15.0 # Keep rolling forward
                 
-            print(f"I see {pixel_count} pixels. Steering: {current_steering}")
+            print(f"I see {pixel_count} pixels. Steering: {current_steering} |||| Line Position: {(average_x/width):.2f}")
             
             # -----------------------------------------------------
             # TIME FOR SAFTEY ATTRIBUTES
