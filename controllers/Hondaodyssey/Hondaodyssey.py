@@ -32,6 +32,7 @@ if lidar is not None:
 else:
     print("Twin your lidar is NOT there")
 
+#Camera 
 camera = driver.getDevice("camera")
 if camera is not None:
     camera.enable(TIME_STEP)
@@ -39,6 +40,8 @@ else:
     print("Your camera is NOT plugged in Twin")
 
 
+
+#Goal: Implementing the a second camera into autopilot by possibly adding a WAYPOINT
 
 
 #to start in manual mode:
@@ -92,7 +95,7 @@ while driver.step() != -1:
 
     else:
         #the AUTOPILOT area
-        current_speed = 10.0 # Constant cruising speed
+        current_speed = 10.0
             
         if camera is not None:
             image = camera.getImageArray()
@@ -135,7 +138,7 @@ while driver.step() != -1:
                 #P=Kp * E(t)
                 p_term = error * 2.0
                 i_term = integral * 0.05
-                d_term = (error - last_error) * 20.0
+                d_term = (error - last_error) * 5.0
                 
                 current_steering = p_term + i_term + d_term
                 
@@ -149,14 +152,15 @@ while driver.step() != -1:
             #FIND THE LINEEEEE
                 driver.setBrakeIntensity(0.0)
                 
-                current_steering = last_steering
-                #if abs(last_error) > 0.05:
-                #    current_steering = last_error * 10.0
-                #else:
-                #    current_steering = 0.0
+                if abs(last_error) > 0.05:
+                    current_steering = last_error * 10.0
+                else:
+                    current_steering = last_steering
+                
                 current_steering = max(-0.4, min(0.4, current_steering))
                      # Straighten the wheel so it doesn't swerve
-                current_speed = 15.0 # Keep rolling forward
+                current_speed = 15.0 
+                # Keep rolling forward
                 
             print(f"I see {pixel_count} pixels. Steering: {current_steering} |||| Line Position: {(average_x/width):.2f}")
             
@@ -222,7 +226,7 @@ while driver.step() != -1:
                 current_speed = 4.0
 
 
-current_speed = 10.0 # Constant cruising speed
+current_speed = 10.0 
             
         if camera is not None:
             image = camera.getImageArray()

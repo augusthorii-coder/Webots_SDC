@@ -11,6 +11,7 @@
 - **The World File:**
 
 ## The Tech I Used:
+
 * **Language:** Python
 * **Simulator:** Webots
 * **Sensors:** 
@@ -24,3 +25,10 @@
 * `LEFT Arrow`: Steer Left (Manual Mode)
 * `RIGHT Arrow`: Steer Right (Manual Mode)
 * `A`: Toggle Autopilot (ON/OFF)
+
+## Checklist:
+
+- [ ] Researching the GPS node
+- [ ] Implementing the node into the BMW
+- [ ] More advanced security tech
+- [ ] Asset testing (along side different cars)

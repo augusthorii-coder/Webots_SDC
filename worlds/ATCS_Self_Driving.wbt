@@ -16,8 +16,8 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.010345630799709965 -0.9985255848878639 0.05328812482819512 5.960843824112964
-  position -36.54473846553191 12.025799337233805 4.298706096798185
+  orientation -0.0049968349835346985 0.9993586686347538 0.035458187555478464 0.2801773470684185
+  position -34.58420749797675 11.776419484229292 3.5128955606663315
   follow "vehicle"
   followType "Mounted Shot"
 }
@@ -45,6 +45,13 @@ BmwX5 {
       fieldOfView 0.7854
     }
   ]
+  sensorsSlotCenter [
+    Camera {
+      translation 2 0.8 1.5
+      rotation 0 1 0 0.323599
+      name "camera(1)"
+    }
+  ]
 }
 CommercialBuilding {
   translation 0 -30.51 0
@@ -69,7 +76,7 @@ AddLaneRoadSegment {
   roadBoundingObject TRUE
 }
 AddLaneRoadSegment {
-  translation -2 0.1 0.05
+  translation -2 0 0.05
   rotation 0 0 1 -1.5707996938995747
   name "road(3)"
   width 8
