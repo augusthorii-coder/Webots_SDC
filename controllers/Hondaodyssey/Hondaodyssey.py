@@ -24,7 +24,7 @@ keyboard = Keyboard()
 keyboard.enable(TIME_STEP)
 
 
-#Lidar
+#Initialization of the Lidar sensor
 lidar = driver.getDevice("lidar") 
 if lidar is not None:
     lidar.enable(TIME_STEP)
@@ -32,14 +32,20 @@ if lidar is not None:
 else:
     print("Twin your lidar is NOT there")
 
-#Camera 
+#The Initialization of the Right Camera 
 camera = driver.getDevice("camera")
 if camera is not None:
     camera.enable(TIME_STEP)
 else:
-    print("Your camera is NOT plugged in Twin")
+    print("Your right camera is NOT plugged in Twin")
 
 
+#The Initialization of the left Camera
+Left_Camera = driver.getDevice("Left_Camera")
+if Left_Camera is not None: 
+    Left_Camera.enable(TIME_STEP)
+else:
+    print("Your left camera is NNOT plugged in Twin")
 
 #Goal: Implementing the a second camera into autopilot by possibly adding a WAYPOINT
 
@@ -201,166 +207,5 @@ while driver.step() != -1:
 
 
 
-"""
-            if pixel_count > 5:
-                average_x = sum_x / pixel_count
-                target_x = width * 0.2  
-                
-                error = (average_x - target_x) / width 
-                
-                if (error > 0) != (last_error > 0):
-                    integral = 0.0
-                    
-                integral += error
-                integral = max(min(integral, 30.0), -30.0) 
-                
-                p_term = error * 3.0
-                i_term = integral * 0.05
-                d_term = (error - last_error) * 10.0
-                
-                current_steering = p_term + i_term + d_term
-            else:
-                #FIND THE LINE TWIN
-                driver.setBrakeIntensity(0.2)
-                current_steering = last_steering
-                current_speed = 4.0
-
-
-current_speed = 10.0 
-            
-        if camera is not None:
-            image = camera.getImageArray()
-            width = camera.getWidth()
-            height = camera.getHeight()
-            sum_x = 0
-            pixel_count = 0
-            far_sum_x = 0; far_pixels = 0
-            near_sum_x = 0; near_pixels = 0
-            
-            
-            #Scan the bottom section of the screen
-            start_y = int(height * 0.5)
-            end_y = int(height * 0.9)
-            #STOP GOING TO THE LEFT
-            start_x = int(width * 0.4)
-            for y in range(start_y, end_y, 2):
-                for x in range(start_x, width, 2):
-                    #Finding the pixel colors:
-                    r, g, b = image[x][y]
-                    brightness = r + g + b
-                    
-                    #if the pixels are very bright:
-                    if brightness > 400: 
-                        if y < height * 0.7:  
-                            far_sum_x += x
-                            far_pixels += 1
-                        else:                 
-                            near_sum_x += x
-                            near_pixels += 1
-            
-            #left lane keeping logic
-            if pixel_count > 0:
-                near_x = near_sum_x / near_pixels
-                target_x = width * 0.85 
-                
-                error = (near_x - target_x) / width #Error = how far it is from the center
-                
-                #to steer towards the area smoothly:
-                p_term = error * 2.0
-                d_term = (error - last_error) * 5.0
-                curve_error = 0.0
-                if far_pixels > 0:
-                    far_x = far_sum_x / far_pixels
-                    curve_error = (far_x - near_x) / width
-                
-                # Combine normal steering with curve anticipation
-                current_steering = p_term + d_term + (curve_error * 3.0)
-                
-                last_error = base_error
-            else:
-                current_steering = 0.0
-            print(f"I see {pixel_count} pixels. Steering: {current_steering}")
-            
-    #Safety clamp for the Honda steering limits
-    if current_steering > 0.5:
-        current_steering = 0.5
-    elif current_steering < -0.5:
-        current_steering = -0.5
-        
-    driver.setCruisingSpeed(current_speed)
-    driver.setSteeringAngle(current_steering)
-
-
-
-
-    else:
-        #the AUTOPILOT area
-        #JUST LANE KEEPING FOR NOW
-        current_speed = 20.0 # Constant cruising speed
-            
-        if camera is not None:
-            image = camera.getImageArray()
-            width = camera.getWidth()
-            height = camera.getHeight()
-            sum_x = 0
-            pixel_count = 0
-            y = int(height * 0.8)
-            
-            for x in range(width):
-                #Finding the pixel colors:
-                r, g, b = image[x][y]
-                brightness = r + g + b
-                
-                #if the pixels are very bright:
-                if brightness > 400: 
-                    sum_x += x
-                    pixel_count += 1
-            
-            #left lane keeping logic
-            if pixel_count > 0:
-                average_x = sum_x / pixel_count
-                center_of_screen = width / 2 
-                error = (average_x - center_of_screen) / width #Error = how far it is from the center
-                #to steer towards the area:
-                current_steering = error * 2
-            else:
-                current_steering = 0.0
-                print(f"I see {pixel_count} bright pixels. Steering: {current_steering}")
-        
-    driver.setCruisingSpeed(current_speed)
-    driver.setSteeringAngle(current_steering)
-
-
-
-
-
-    elif up and right:
-        current_steering = TURN_ANGLE
-        current_speed = MAX_SPEED
-    elif up and left:
-        current_steering = -TURN_ANGLE
-        current_speed = MAX_SPEED
-    elif down and right:
-        current_steering = TURN_ANGLE
-        current_speed = -MAX_SPEED
-    elif down and left:
-        current_steering = -TURN_ANGLE
-        current_speed = -MAX_SPEED
-
-    
-    # Check speed (UP/DOWN)
-    if key == Keyboard.UP:
-        current_speed = MAX_SPEED
-    elif key == Keyboard.DOWN: 
-        current_speed = -MAX_SPEED
-        
-    # Check steering (LEFT/RIGHT)
-    if key == Keyboard.LEFT:
-        current_steering = -TURN_ANGLE
-    elif key == Keyboard.RIGHT:
-        current_steering = TURN_ANGLE
-"""
-       
-       
 
         
