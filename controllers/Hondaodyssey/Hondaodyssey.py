@@ -100,75 +100,96 @@ while driver.step() != -1:
             current_steering = TURN_ANGLE
 
     else:
-        #the AUTOPILOT area
-        current_speed = 10.0
-            
+    
+    #DUAL CAMERA LANE KEEPING
+    current_speed = 10.0
+        
+        error = 0.0
+        visible_cameras = 0
+        width = camera.getWidth()
+        height = camera.getHeight()
+        start_y = int(height * 0.4)
+    #Preconditions:
+        #The vehicle is in autopilot mode
+        #Both camera and left camera are enabled and returning image arrays
+        #start_y is defined to prevent vanishing point confusions
+    #Postconditions:
+        #visible_cameras has a count 0-2 of how many lane lines were found
+        #error has the averaged offset of the vehicle to the visible lines
+        #if lines are visible, PID math results in the current_steering
+        #if no lines are there, then like the code before, the current steering results in last_steering
+        
+        #SET total_error = 0, visible_cameras = 0
+        
+        #PROCESS RIGHT CAMERA:
+            #scan the bottom right like before
+            #Code stays the same as previous
+        pixel_count_right = 0
+        sum_x_r = 0
         if camera is not None:
-            image = camera.getImageArray()
-            width = camera.getWidth()
-            height = camera.getHeight()
-            sum_x = 0
-            pixel_count = 0
+            image_r = camera.getImageArray()  
             
-            #Scan the bottom section of the screen
-            start_y = int(height * 0.4)
-            end_y = height
-            #STOP GOING TO THE LEFT
-            for y in range(start_y, end_y, 2):
+            for y in range(start_y, height, 2):
                 for x in range(int(width * 0.5), width, 2):
-                    #Finding the pixel colors:
-                    r, g, b = image[x][y]
-                    brightness = r + g + b
-                    #if the pixels are very bright:
-                    is_white = brightness > 450 and abs(r - g) < 30 and abs(r - b) < 30
-                    
-                    #High Red and Green, very low Blue
-                   # is_yellow = r > 150 and g > 130 and b < 100 and (r - b) > 50
-                    if is_white: # or is_yellow:
-                        sum_x += x
-                        pixel_count += 1
-            #left lane keeping logic
-            if pixel_count > 0:
-                average_x = sum_x / pixel_count
-                target_x = width * 0.7 
-                
-                error = (average_x - target_x) / width 
-                
-                if (error > 0) != (last_error > 0):
-                    integral = 0.0
-                    
-                integral += error
-                integral = max(min(integral, 30.0), -30.0) 
-                integral *= 0.9
-                
-                #P=Kp * E(t)
-                p_term = error * 2.0
-                i_term = integral * 0.05
-                d_term = (error - last_error) * 5.0
-                
-                current_steering = p_term + i_term + d_term
-                
-                turn_factor = 1.0 - abs(current_steering) * 1.2
-                current_speed = max(15.0, 20.0 * turn_factor)
-                
-                last_error = error
-                last_steering = current_steering
-                driver.setBrakeIntensity(0.0)
-            else:
-            #FIND THE LINEEEEE
-                driver.setBrakeIntensity(0.0)
-                
-                if abs(last_error) > 0.05:
-                    current_steering = last_error * 10.0
-                else:
-                    current_steering = last_steering
-                
-                current_steering = max(-0.4, min(0.4, current_steering))
-                     # Straighten the wheel so it doesn't swerve
-                current_speed = 15.0 
-                # Keep rolling forward
-                
-            print(f"I see {pixel_count} pixels. Steering: {current_steering} |||| Line Position: {(average_x/width):.2f}")
+                    r, g, b = image_r[x][y]
+                    is_white = (r + g + b) > 450 and abs(r - g) < 30 and abs(r - b) < 30
+                    if is_white:
+                        sum_x_r += x
+                        pixel_count_right += 1  
+            if pixel_count_right > 0:
+                avg_x_r = sum_x_r / pixel_count_right
+                target_x_r = width * 0.7
+                error += (avg_x_r - target_x_r) / width
+                visible_cameras += 1
+        #PROCESS LEFT CAMERA:
+            #Continue the code with the Right camera and average out error
+        pixel_count_left = 0
+        sum_x_l = 0
+        if Left_Camera is not None:
+            image_l = Left_Camera.getImageArray()
+            for y in range(start_y, height, 2):
+                for x in range(0, int(width * 0.5), 2):
+                    r, g, b = image_l[x][y]
+                    is_white = (r + g + b) > 450 and abs(r - g) < 30 and abs(r - b) < 30
+                    if is_white:
+                        sum_x_l += x
+                        pixel_count_left += 1
+            if pixel_count_left > 0:
+                avg_x_l = sum_x_l / pixel_count_left
+                target_x_l = width * 0.3
+                error += (avg_x_l - target_x_l) / width
+                visible_cameras += 1    
+        #DUAL PID
+            #If visible_cameras > 0:
+            #average error = total_error / visible_cameras
+            #Apply the pid formula to error to get the steering angle just like before
+            #Possibly reduce the speed on each corner depending on later tests
+            #save the errors for memory
+        if visible_cameras > 0:
+            error = error / visible_cameras
+            if (error > 0) != (last_error > 0):
+                integral = 0.0
+            integral += error
+            integral = max(min(integral, 30.0), -30.0) 
+            integral *= 0.9
+            p_term = error * 2.0
+            i_term = integral * 0.05
+            d_term = (error - last_error) * 5.0
+            
+            current_steering = p_term + i_term + d_term
+            turn_factor = 1.0 - abs(current_steering) * 1.2
+            current_speed = max(15.0, 20.0 * turn_factor)
+            last_error = error
+            last_steering = current_steering
+            driver.setBrakeIntensity(0.0)
+            print(f"Cameras active: {visible_cameras} | R_Pixels: {pixel_count_right} | L_Pixels: {pixel_count_left} | Steer: {current_steering:.2f}")
+            
+        #ELSE: for the blind spots
+            #Hold steering wheel to the last known location/ange
+            #set constant speed for recovery
+            
+            
+
             
             # -----------------------------------------------------
             # TIME FOR SAFTEY ATTRIBUTES
