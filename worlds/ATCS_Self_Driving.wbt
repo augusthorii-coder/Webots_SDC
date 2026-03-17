@@ -49,7 +49,7 @@ BmwX5 {
     Camera {
       translation 2 0.8 1.5
       rotation 0 1 0 0.323599
-      name "camera(1)"
+      name "Left_Camera"
     }
   ]
 }

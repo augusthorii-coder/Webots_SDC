@@ -102,7 +102,7 @@ while driver.step() != -1:
     else:
     
     #DUAL CAMERA LANE KEEPING
-    current_speed = 10.0
+        current_speed = 10.0
         
         error = 0.0
         visible_cameras = 0
@@ -156,7 +156,7 @@ while driver.step() != -1:
                         pixel_count_left += 1
             if pixel_count_left > 0:
                 avg_x_l = sum_x_l / pixel_count_left
-                target_x_l = width * 0.3
+                target_x_l = width * 0.6
                 error += (avg_x_l - target_x_l) / width
                 visible_cameras += 1    
         #DUAL PID
@@ -182,40 +182,50 @@ while driver.step() != -1:
             last_error = error
             last_steering = current_steering
             driver.setBrakeIntensity(0.0)
-            print(f"Cameras active: {visible_cameras} | R_Pixels: {pixel_count_right} | L_Pixels: {pixel_count_left} | Steer: {current_steering:.2f}")
+            
+            pos_r = (avg_x_r / width) if pixel_count_right > 0 else 0.0
+            pos_l = (avg_x_l / width) if pixel_count_left > 0 else 0.0
+            print(f"Cameras active: {visible_cameras} ||| L_Line is at: {pos_l:.2f} ||| R_Line is at: {pos_r:.2f} ||| Steer: {current_steering:.2f}")
             
         #ELSE: for the blind spots
             #Hold steering wheel to the last known location/ange
             #set constant speed for recovery
+        else:
+            driver.setBrakeIntensity(0.0)
+            current_steering = last_steering * 2
+            current_steering = max(-0.4, min(0.4, current_steering))
             
+            current_speed = 15.0 
+            print("BLIND SPOT! Both cameras lost. Holding wheel.")
             
 
             
             # -----------------------------------------------------
             # TIME FOR SAFTEY ATTRIBUTES
             # _____________________________________________________
-            obstacle_detected = False 
+        obstacle_detected = False 
             
-            if lidar is not None:
-                range_image = lidar.getRangeImage()
-                lidar_width = lidar.getHorizontalResolution()
+        if lidar is not None:
+            
+            range_image = lidar.getRangeImage()
+            lidar_width = lidar.getHorizontalResolution()
                 
-                #Only Checking the objects that are infront of the car / the middle 20%
-                center_start = int(lidar_width * 0.4)
-                center_end = int(lidar_width * 0.6)
+            #Only Checking the objects that are infront of the car / the middle 20%
+            center_start = int(lidar_width * 0.4)
+            center_end = int(lidar_width * 0.6)
                 
-                for i in range(center_start, center_end):
-                    distance = range_image[i]
-                    #If the object is less that or equal to 10 meters away from the car
-                    if distance < 5:
-                        obstacle_detected = True
-                        break
+            for i in range(center_start, center_end):
+                distance = range_image[i]
+                #If the object is less that or equal to 10 meters away from the car
+                if distance < 5:
+                    obstacle_detected = True
+                    break
                 
                 #override cameraas:
-                if obstacle_detected:
-                    driver.setBrakeIntensity(1.0)
-                    current_speed = 0.0
-                    print("OH MY GOD YOURE ABOUT TO CRASH")
+            if obstacle_detected:
+                driver.setBrakeIntensity(1.0)
+                current_speed = 0.0
+                print("OH MY GOD YOURE ABOUT TO CRASH")
             #______________________________________________________
             
             
