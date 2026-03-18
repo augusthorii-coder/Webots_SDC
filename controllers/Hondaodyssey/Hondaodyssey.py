@@ -56,6 +56,8 @@ autodrive = False
 last_error = 0.0
 last_steering = 0.0
 integral = 0.0
+last_average_x = 0.0
+was_blind = False 
 print("Use the up/down/left/right buttons to move")
 print("Press A to start the AUTOPILOT")
 
@@ -109,6 +111,7 @@ while driver.step() != -1:
         width = camera.getWidth()
         height = camera.getHeight()
         start_y = int(height * 0.4)
+        
     #Preconditions:
         #The vehicle is in autopilot mode
         #Both camera and left camera are enabled and returning image arrays
@@ -141,6 +144,7 @@ while driver.step() != -1:
                 target_x_r = width * 0.7
                 error += (avg_x_r - target_x_r) / width
                 visible_cameras += 1
+                last_average_x = avg_x_r
         #PROCESS LEFT CAMERA:
             #Continue the code with the Right camera and average out error
         pixel_count_left = 0
@@ -156,7 +160,7 @@ while driver.step() != -1:
                         pixel_count_left += 1
             if pixel_count_left > 0:
                 avg_x_l = sum_x_l / pixel_count_left
-                target_x_l = width * 0.6
+                target_x_l = width * 0.2
                 error += (avg_x_l - target_x_l) / width
                 visible_cameras += 1    
         #DUAL PID
@@ -167,6 +171,9 @@ while driver.step() != -1:
             #save the errors for memory
         if visible_cameras > 0:
             error = error / visible_cameras
+            if was_blind:
+                last_error = error
+                was_blind = False
             if (error > 0) != (last_error > 0):
                 integral = 0.0
             integral += error
@@ -191,12 +198,19 @@ while driver.step() != -1:
             #Hold steering wheel to the last known location/ange
             #set constant speed for recovery
         else:
-            driver.setBrakeIntensity(0.0)
-            current_steering = last_steering * 2
-            current_steering = max(-0.4, min(0.4, current_steering))
             
-            current_speed = 15.0 
-            print("BLIND SPOT! Both cameras lost. Holding wheel.")
+            was_blind = True
+            driver.setBrakeIntensity(0.0)
+            target_x_r = width * 0.7
+            displacement = (last_average_x - target_x_r) / width
+            recovery_steering = last_steering + (displacement * 1.5)
+            recovery_steering = max(-0.5, min(0.5, recovery_steering))
+            current_speed = max(5.0, 15.0 - abs(displacement) * 30.0)
+            
+            current_steering = recovery_steering
+            
+             
+            print(f"BLIND: last_error={last_error:.3f} recovery={current_steering:.3f}")
             
 
             

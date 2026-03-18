@@ -16,8 +16,8 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.0049968349835346985 0.9993586686347538 0.035458187555478464 0.2801773470684185
-  position -34.58420749797675 11.776419484229292 3.5128955606663315
+  orientation -0.004997245239650442 0.999440719174141 0.033064730404020026 0.3001653692072818
+  position -38.286884601888275 11.739316929828162 4.773819548084255
   follow "vehicle"
   followType "Mounted Shot"
 }
@@ -29,6 +29,35 @@ BmwX5 {
   translation -28.4 11.9792 1.35924
   rotation -0.0028616813369501406 -0.20310601401226921 -0.9791525712839514 0
   color 0.1 0.11 0.5
+  controller "Hondaodyssey"
+  controllerArgs [
+    ""
+  ]
+  sensorsSlotFront [
+    SickLms291 {
+      name "lidar"
+    }
+  ]
+  sensorsSlotTop [
+    Camera {
+      translation 1 -0.8 0
+      rotation 0 1 0 0.32359869389957474
+      fieldOfView 0.7854
+    }
+  ]
+  sensorsSlotCenter [
+    Camera {
+      translation 2 0.8 1.5
+      rotation 0 1 0 0.323599
+      name "Left_Camera"
+    }
+  ]
+}
+BmwX5 {
+  translation -4.53998 -13.2608 1.45924
+  rotation 0 0 1 1.5708
+  color 0.1 0.11 0.5
+  name "vehicle(1)"
   controller "Hondaodyssey"
   controllerArgs [
     ""
