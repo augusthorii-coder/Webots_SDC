@@ -143,6 +143,10 @@ while driver.step() != -1:
                 avg_x_r = sum_x_r / pixel_count_right
                 target_x_r = width * 0.7
                 error += (avg_x_r - target_x_r) / width
+                
+                if avg_x_r > width * 0.85:
+                    error *= 1.5
+                
                 visible_cameras += 1
                 last_average_x = avg_x_r
         #PROCESS LEFT CAMERA:
@@ -193,6 +197,7 @@ while driver.step() != -1:
             pos_r = (avg_x_r / width) if pixel_count_right > 0 else 0.0
             pos_l = (avg_x_l / width) if pixel_count_left > 0 else 0.0
             print(f"Cameras active: {visible_cameras} ||| L_Line is at: {pos_l:.2f} ||| R_Line is at: {pos_r:.2f} ||| Steer: {current_steering:.2f}")
+
             
         #ELSE: for the blind spots
             #Hold steering wheel to the last known location/ange
@@ -210,8 +215,8 @@ while driver.step() != -1:
             current_steering = recovery_steering
             
              
-            print(f"BLIND: last_error={last_error:.3f} recovery={current_steering:.3f}")
-            
+            print(f"Cameras active: {visible_cameras} ||| L_Line is at: {pos_l:.2f} ||| R_Line is at: {pos_r:.2f} ||| Steer: {current_steering:.2f} ||| Speed: {current_speed:.1f} ||| Error: {error:.3f} ||| P:{p_term:.2f} I:{i_term:.2f} D:{d_term:.2f}")
+
 
             
             # -----------------------------------------------------
@@ -249,8 +254,3 @@ while driver.step() != -1:
     driver.setCruisingSpeed(current_speed)
     driver.setSteeringAngle(current_steering)
 
-
-
-
-
-        

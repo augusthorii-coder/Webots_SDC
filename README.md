@@ -31,4 +31,5 @@
 - [ ] Researching the GPS node
 - [ ] Implementing the node into the BMW
 - [ ] More advanced security tech
-- [ ] Asset testing (along side different cars)
+- [x] Asset testing (along side different cars)
+- [ ] off and on of autopilot by using controls
