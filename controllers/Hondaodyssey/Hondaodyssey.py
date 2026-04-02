@@ -149,7 +149,7 @@ while driver.step() != -1:
                 
             if pixel_count_right > 0:
                 avg_x_r = sum_x_r / pixel_count_right
-                target_x_r = width * 0.75
+                target_x_r = width * 0.77
                 error += (avg_x_r - target_x_r) / width
                 
                 if avg_x_r > width * 0.85:
@@ -203,7 +203,7 @@ while driver.step() != -1:
             #memory
             i_term = integral * 0.05
             #overshoot
-            d_term = (error - last_error) * 2.0
+            d_term = (error - last_error) * 4.0
             
             current_steering = p_term + i_term + d_term
             
@@ -231,6 +231,10 @@ while driver.step() != -1:
             was_blind = True
             last_visible_cameras = 0
             driver.setBrakeIntensity(0.0)
+            if pos_r > 0.5:
+                last_loc = 1
+            else: 
+                last_loc = -1
             current_steering = abs(last_steering) * 20
             current_speed = 10.0
             
@@ -271,7 +275,7 @@ while driver.step() != -1:
                 
                 #override cameraas:
             if obstacle_detected:
-                if current_speed > 10.0:
+                if current_speed > 30.0:
                     driver.setBrakeIntensity(0.0)
                     current_steering = 0.5
                     print("High speed, swerving right")
