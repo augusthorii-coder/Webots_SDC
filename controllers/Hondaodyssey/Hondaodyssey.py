@@ -117,6 +117,7 @@ while driver.step() != -1:
         height = camera.getHeight()
         start_y = int(height * 0.4)
         
+        
     #Preconditions:
         #The vehicle is in autopilot mode
         #Both camera and left camera are enabled and returning image arrays
@@ -144,6 +145,8 @@ while driver.step() != -1:
                     if is_white:
                         sum_x_r += x
                         pixel_count_right += 1  
+          
+                
             if pixel_count_right > 0:
                 avg_x_r = sum_x_r / pixel_count_right
                 target_x_r = width * 0.75
@@ -161,12 +164,14 @@ while driver.step() != -1:
         if Left_Camera is not None:
             image_l = Left_Camera.getImageArray()
             for y in range(start_y, height, 2):
-                for x in range(0, int(width * 0.5), 2):
+                for x in range(0, int(width * 0.4), 2):
                     r, g, b = image_l[x][y]
                     is_white = (r + g + b) > 450 and abs(r - g) < 30 and abs(r - b) < 30
                     if is_white:
                         sum_x_l += x
                         pixel_count_left += 1
+
+            
             if pixel_count_left > 0:
                 avg_x_l = sum_x_l / pixel_count_left
                 target_x_l = width * 0.15
@@ -178,8 +183,8 @@ while driver.step() != -1:
             #Apply the pid formula to error to get the steering angle just like before
             #Possibly reduce the speed on each corner depending on later tests
             #save the errors for memory
-        if visible_cameras == 1:
-            error = error * 0.5
+        if visible_cameras > 0:
+            error = error / visible_cameras
             #look only 3 frame-angles to smoothe out movement of the car
             angle_filter_buffer.pop(0)
             angle_filter_buffer.append(error)
@@ -193,9 +198,12 @@ while driver.step() != -1:
             integral += error
             integral = max(min(integral, 30.0), -30.0) 
             integral *= 0.9
-            p_term = error * 2.0
+            #Turn
+            p_term = error * 0.4
+            #memory
             i_term = integral * 0.05
-            d_term = (error - last_error) * 5.0
+            #overshoot
+            d_term = (error - last_error) * 2.0
             
             current_steering = p_term + i_term + d_term
             
@@ -223,7 +231,7 @@ while driver.step() != -1:
             was_blind = True
             last_visible_cameras = 0
             driver.setBrakeIntensity(0.0)
-            current_steering = last_steering
+            current_steering = abs(last_steering) * 20
             current_speed = 10.0
             
             
@@ -236,7 +244,7 @@ while driver.step() != -1:
             #current_steering = recovery_steering
             
              
-            print(f"Cameras active: {visible_cameras} ||| L_Line is at: {pos_l:.2f} ||| R_Line is at: {pos_r:.2f} ||| Steer: {current_steering:.2f} ||| Speed: {current_speed:.1f} ||| Error: {error:.3f} ||| P:{p_term:.2f} I:{i_term:.2f} D:{d_term:.2f}")
+            print(f"Cameras active: {visible_cameras} ||| Line lost ||| L_Line is at: {pos_l:.2f} ||| R_Line is at: {pos_r:.2f} ||| Steer: {current_steering:.2f} ||| Speed: {current_speed:.1f} ||| Error: {error:.3f} ||| P:{p_term:.2f} I:{i_term:.2f} D:{d_term:.2f}")
 
 
             
@@ -263,9 +271,16 @@ while driver.step() != -1:
                 
                 #override cameraas:
             if obstacle_detected:
-                driver.setBrakeIntensity(1.0)
-                current_speed = 0.0
-                print("OH MY GOD YOURE ABOUT TO CRASH")
+                if current_speed > 10.0:
+                    driver.setBrakeIntensity(0.0)
+                    current_steering = 0.5
+                    print("High speed, swerving right")
+                else:    
+                    driver.setBrakeIntensity(1.0)
+                    current_speed = 0.0
+                    current_steering = 0.0
+                    print("OH MY GOD YOURE ABOUT TO CRASH")
+                
             #______________________________________________________
             
             
