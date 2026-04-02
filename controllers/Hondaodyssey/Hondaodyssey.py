@@ -3,6 +3,18 @@ Honda Odyssey is the cars name
 August Horii
 ATCS PROJECT for a self driving car
 """
+
+#This is just for myself: when youre pulling or commiting on the new device, use 
+
+#git add .
+#git commit -m "Updated robot sensors and logic"
+#git push
+#to commit
+
+#git pull
+#to get latest code
+
+
 import math
 from vehicle import Driver
 from controller import Keyboard, Lidar, Camera
@@ -261,16 +273,23 @@ while driver.step() != -1:
             
             range_image = lidar.getRangeImage()
             lidar_width = lidar.getHorizontalResolution()
+            lidar_layers = lidar.getNumberOfLayers()
                 
             #Only Checking the objects that are infront of the car / the middle 20%
             center_start = int(lidar_width * 0.4)
             center_end = int(lidar_width * 0.6)
-                
-            for i in range(center_start, center_end):
-                distance = range_image[i]
-                #If the object is less that or equal to 10 meters away from the car
-                if distance < 5:
-                    obstacle_detected = True
+            ycenter_start = int(lidar_layers * 0.1)
+            ycenter_end = int(lidar_layers)
+             
+            for y in range(ycenter_start, ycenter_end):
+                for x in range(center_start, center_end):
+                    index = x + (y * lidar_width)
+                    distance = range_image[index]
+                    #If the object is less that or equal to 10 meters away from the car
+                    if distance < 5:
+                        obstacle_detected = True
+                        break
+                if obstacle_detected:
                     break
                 
                 #override cameraas:
