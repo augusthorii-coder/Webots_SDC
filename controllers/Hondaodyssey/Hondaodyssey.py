@@ -75,8 +75,48 @@ last_visible_cameras = 0
 #angle_filter_buffer = [0.0, 0.0, 0.0]
 angle_filter_buffer = [0.0, 0.0, 0.0]
 
+#------------------------------------------------------
+# TRAFFIC LIGHTS
+#______________________________________________________
+            
+#F'n detect_traffic_light(image, width, height):
+
+    #set red_pixels = 0
+    #set green_pixels = 0
+    #set yellow_pixels = 0
+    #Only scan the top 30% of the image IF I dont add a new camera
+    #for each y from 0 to height * 0.3:
+        #for each x from 0 to width:
+            #get r, g, b values of pixel at (x, y)
+            #Check what color they are:
+                    
+            #if pixel is very red (high R, low G, low B):
+                #red_pixels += 1
+            #elif pixel is very green (high G, low R, low B):
+                #green_pixels += 1
+            #elif pixel is very yellow (high R AND high G, low B):
+                #yellow_pixels += 1
+            
+    #what light we see based on pixel count
+    #need enough pixels to avoid false positives
+    
+    #if red_pixels > 20:
+        #return "RED"
+    #elif green_pixels > 20:
+        #return "GREEN"
+    #elif yellow_pixels > 20:
+        #return "YELLOW"
+    #else:
+        #return None  # no light detected         
+
+
+
 print("Use the up/down/left/right buttons to move")
 print("Press A to start the AUTOPILOT")
+
+
+
+
 
 #Main Loop
 while driver.step() != -1:
@@ -150,6 +190,19 @@ while driver.step() != -1:
         if camera is not None:
             image_r = camera.getImageArray()  
             
+            #if result is "RED":
+                #brake fully
+                #set speed to 0
+                #print "RED LIGHT"
+    
+            #elif result is "YELLOW":
+                #reduce speed by by half
+                #print "YELLOW LIGHT"
+    
+            #elif result is "GREEN":
+                #continue with speed
+                #print "GREEN LIGHT"
+                    
             for y in range(start_y, height, 2):
                 for x in range(int(width * 0.5), width, 2):
                     r, g, b = image_r[x][y]
@@ -215,14 +268,14 @@ while driver.step() != -1:
             #memory
             i_term = integral * 0.05
             #overshoot
-            d_term = (error - last_error) * 4.0
+            d_term = (error - last_error) * 3.0
             
             current_steering = p_term + i_term + d_term
             
-            if current_steering - last_steering > 0.1:
-                current_steering = last_steering + 0.1
-            elif current_steering - last_steering < -0.1:
-                current_steering = last_steering - 0.1
+            if current_steering - last_steering > 0.15:
+                current_steering = last_steering + 0.15
+            elif current_steering - last_steering < -0.15:
+                current_steering = last_steering - 0.15
                 
             turn_factor = 1.0 - abs(current_steering) * 1.2
             current_speed = max(15.0, 20.0 * turn_factor)
@@ -231,7 +284,7 @@ while driver.step() != -1:
             driver.setBrakeIntensity(0.0)
             
             pos_r = (avg_x_r / width) if pixel_count_right > 0 else 0.0
-            pos_l = (avg_x_l / width) if pixel_count_left > 0 else 0.0
+            pos_l = pos_l = (avg_x_l / width) if (pixel_count_left > 0 and pixel_count_right == 0) else 0.0
             print(f"Cameras active: {visible_cameras} ||| L_Line is at: {pos_l:.2f} ||| R_Line is at: {pos_r:.2f} ||| Steer: {current_steering:.2f}")
 
             
@@ -262,11 +315,15 @@ while driver.step() != -1:
              
             print(f"Cameras active: {visible_cameras} ||| Line lost ||| L_Line is at: {pos_l:.2f} ||| R_Line is at: {pos_r:.2f} ||| Steer: {current_steering:.2f} ||| Speed: {current_speed:.1f} ||| Error: {error:.3f} ||| P:{p_term:.2f} I:{i_term:.2f} D:{d_term:.2f}")
 
+    
+    
 
+            
             
             # -----------------------------------------------------
             # TIME FOR SAFTEY ATTRIBUTES
             # _____________________________________________________
+    
         obstacle_detected = False 
             
         if lidar is not None:

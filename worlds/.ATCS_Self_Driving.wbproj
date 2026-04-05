@@ -9,8 +9,5 @@ orthographicViewHeight: 1
 textFiles: 0 "controllers/Hondaodyssey/Hondaodyssey.py"
 globalOptionalRendering: CoordinateSystem::CameraFrustums
 consoles: Console:All:All
-renderingDevicePerspectives: vehicle(1):Left_Camera;1;1;0;0
-renderingDevicePerspectives: vehicle(1):camera;1;1;0;0
-renderingDevicePerspectives: vehicle:Left_Camera;1;2.13794;0;0.678639
+renderingDevicePerspectives: vehicle:Left_Camera;1;2.61496;0;0.678639
 renderingDevicePerspectives: vehicle:camera;1;2.92188;0;0
-renderingDevicePerspectives: vehicle:camera(1);1;2.625;0;0.738462
