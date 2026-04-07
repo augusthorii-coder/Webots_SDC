@@ -12,12 +12,13 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/appearances/protos/Parquetry.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/buildings/protos/BigGlassTower.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/buildings/protos/CommercialBuilding.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/traffic/protos/GenericTrafficLight.proto"
 
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.004998979660315104 0.9997876004163762 -0.019994105531893232 0.49009998072908806
-  position -56.177045714126294 11.959651480976365 5.724653775379251
+  orientation 0.009989849933526501 0.9989516936308722 -0.044673445024057554 0.44044696128460453
+  position -60.00665563139227 11.893100871715733 6.791499118075409
   follow "vehicle"
   followType "Mounted Shot"
 }
@@ -26,8 +27,8 @@ TexturedBackground {
 TexturedBackgroundLight {
 }
 BmwX5 {
-  translation -48 11.8192 1.35924
-  rotation -0.0028616813369501406 -0.20310601401226921 -0.9791525712839514 0
+  translation -48 11.8192 0.9071952000000002
+  rotation 4.3342848281310087e-10 1 -7.828454597765325e-11 3.1075572970541195e-19
   color 0.1 0.11 0.5
   controller "Hondaodyssey"
   controllerArgs [
@@ -38,11 +39,20 @@ BmwX5 {
       name "lidar"
     }
   ]
+  sensorsSlotRear [
+    Camera {
+      translation -3 0 1.2
+      rotation 0 0 1 3.141592653589793
+      name "Top_Camera"
+    }
+  ]
   sensorsSlotTop [
     Camera {
       translation 1 -0.8 0
       rotation 0 1 0 0.32359869389957474
       fieldOfView 0.7854
+      width 640
+      height 480
     }
   ]
   sensorsSlotCenter [
@@ -50,8 +60,16 @@ BmwX5 {
       translation 2 0.8 1.5
       rotation 0 1 0 0.323599
       name "Left_Camera"
+      width 640
+      height 480
     }
   ]
+}
+GenericTrafficLight {
+  translation -27 14.27 0
+  rotation 0 0 1 3.141592653589793
+  greenTime 15
+  state "red"
 }
 AddLanesRoadSegment {
   translation -52 10 0.05
