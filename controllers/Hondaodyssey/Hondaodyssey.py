@@ -211,11 +211,11 @@ while driver.step() != -1:
             integral = max(min(integral, 30.0), -30.0) 
             integral *= 0.9
             #Turn
-            p_term = error * 0.4
+            p_term = error * 0.1
             #memory
             i_term = integral * 0.05
             #overshoot
-            d_term = (error - last_error) * 4.0
+            d_term = (error - last_error) * 5.0
             
             current_steering = p_term + i_term + d_term
             
@@ -243,11 +243,11 @@ while driver.step() != -1:
             was_blind = True
             last_visible_cameras = 0
             driver.setBrakeIntensity(0.0)
-            if pos_r > 0.5:
+            if last_average_x > (width * 0.5):
                 last_loc = 1
             else: 
                 last_loc = -1
-            current_steering = abs(last_steering) * 20
+            current_steering = abs(last_steering) * 20 # * last_loc
             current_speed = 10.0
             
             
