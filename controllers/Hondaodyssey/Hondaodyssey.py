@@ -119,19 +119,39 @@ angle_filter_buffer = [0.0, 0.0, 0.0]
 def detect_traffic_light(image, width, height):
     zone_size = 2
 
-    for zone_y in range(0, height, zone_size):  # full height now
+
+#green:
+#63, 192, 123
+#75, 207, 124
+
+#yellow:
+#209, 179, 99
+#211, 182, 115
+#222, 192, 90
+
+#red:
+#209, 61, 75
+#210, 78, 93
+#223, 79, 81
+
+    target_red = (215, 75, 85)
+    target_yellow = (215, 185, 100)
+    target_green = (70, 200, 125)
+    tolerance = 35
+    
+    for zone_y in range(0, height, zone_size): 
         for zone_x in range(0, width, zone_size):
             red = 0; green = 0; yellow = 0
 
             for y in range(zone_y, min(zone_y + zone_size, height)):
                 for x in range(zone_x, min(zone_x + zone_size, width)):
                     r, g, b = image[x][y]
-                    if r > 180 and g < 80 and b < 80:
+                    if abs(r - target_red[0]) < tolerance and abs(g - target_red[1]) < tolerance and abs(b - target_red[2]) < tolerance:
                         red += 1
-                    elif g > 150 and r < 100 and b < 100:
-                        green += 1
-                    elif r > 180 and g > 180 and b < 80:
+                    elif abs(r - target_yellow[0]) < tolerance and abs(g - target_yellow[1]) < tolerance and abs(b - target_yellow[2]) < tolerance:
                         yellow += 1
+                    elif abs(r - target_green[0]) < tolerance and abs(g - target_green[1]) < tolerance and abs(b - target_green[2]) < tolerance:
+                        green += 1
 
             if red >= 2:
                 return "RED"
@@ -201,37 +221,6 @@ while driver.step() != -1:
         height = camera.getHeight()
         start_y = int(height * 0.4)
         
-        if Top_Camera is not None:
-        image_top = Top_Camera.getImageArray()
-        top_width = Top_Camera.getWidth()
-        top_height = Top_Camera.getHeight()
-        
-        #if result is "RED":
-                #brake fully
-                #set speed to 0
-                #print "RED LIGHT"
-    
-            #elif result is "YELLOW":
-                #reduce speed by by half
-                #print "YELLOW LIGHT"
-    
-            #elif result is "GREEN":
-                #continue with speed
-                #print "GREEN LIGHT"
-                
-        light = detect_traffic_light(image_top, top_width, top_height)
-        if light == "RED":
-            driver.setBrakeIntensity(1.0)
-            current_speed = 0.0
-            print("redddddd")
-        elif light == "YELLOW":
-            current_speed = max(5.0, current_speed * 0.5)
-            print("yellowwwww")
-        elif light == "GREEN":
-            if current_speed == 0.0:
-                current_speed = 10.0
-            print("greeeeeennnn")
-            
     #Preconditions:
         #The vehicle is in autopilot mode
         #Both camera and left camera are enabled and returning image arrays
@@ -251,34 +240,7 @@ while driver.step() != -1:
         sum_x_r = 0
         if camera is not None:
             image_r = camera.getImageArray()  
-            
-            
-                
-            if camera is not None:
-                image_r = camera.getImageArray()
-                
-                for y in range(0, int(height * 0.3), 10):
-                    for x in range(0, width, 10):
-                        r, g, b = image_r[x][y]
-                        if r > 100 or g > 100 or b > 100:
-                            print(f"x={x} y={y} R={r} G={g} B={b}")
-                
-                light = detect_traffic_light(image_r, width, height)
-               
-                if light == "RED":
-                    driver.setBrakeIntensity(1.0)
-                    current_speed = 0.0
-                    print("reddddd")
-                    
-                elif light == "YELLOW":
-                    current_speed = max(5.0, current_speed * 0.5)
-                    print("Yellowwww")
-                
-                elif light == "GREEN":
-                    if current_speed == 0.0:
-                        current_speed = 10.0
-                    print("greennnnn")
-                
+              
             for y in range(start_y, height, 2):
                 for x in range(int(width * 0.5), width, 2):
                     r, g, b = image_r[x][y]
@@ -304,21 +266,7 @@ while driver.step() != -1:
         sum_x_l = 0
         if Left_Camera is not None:
             image_l = Left_Camera.getImageArray()
-            
-            if light == "RED":
-                driver.setBrakeIntensity(1.0)
-                current_speed = 0.0
-                print("reddddd")
-                    
-            elif light == "YELLOW":
-                current_speed = max(5.0, current_speed * 0.5)
-                print("Yellowwww")
-                
-            elif light == "GREEN":
-                if current_speed == 0.0:
-                        current_speed = 10.0
-                print("greennnnn")
-                    
+                  
             for y in range(start_y, height, 2):
                 for x in range(0, int(width * 0.4), 2):
                     r, g, b = image_l[x][y]
@@ -359,11 +307,8 @@ while driver.step() != -1:
             #memory
             i_term = integral * 0.05
             #overshoot
-<<<<<<< HEAD
-            d_term = (error - last_error) * 5.0
-=======
             d_term = (error - last_error) * 3.0
->>>>>>> d634c7650efa49c0137a280e0653ba4073e8fa90
+
             
             current_steering = p_term + i_term + d_term
             
@@ -419,6 +364,41 @@ while driver.step() != -1:
             # TIME FOR SAFTEY ATTRIBUTES
             # _____________________________________________________
     
+        
+        if Top_Camera is not None:
+            image_top = Top_Camera.getImageArray()
+            top_width = Top_Camera.getWidth()
+            top_height = Top_Camera.getHeight()
+        
+            #if result is "RED":
+                #brake fully
+                #set speed to 0
+                #print "RED LIGHT"
+    
+            #elif result is "YELLOW":
+                #reduce speed by by half
+                #print "YELLOW LIGHT"
+    
+            #elif result is "GREEN":
+                #continue with speed
+                #print "GREEN LIGHT"
+                
+            light = detect_traffic_light(image_top, top_width, top_height)
+            if light == "RED":
+                driver.setBrakeIntensity(1.0)
+                current_speed = 0.0
+                print("redddddd")
+            elif light == "YELLOW":
+                current_speed = max(5.0, current_speed * 0.5)
+                print("yellowwwww")
+            elif light == "GREEN":
+                if current_speed == 0.0:
+                    current_speed = 10.0
+                print("greeeeeennnn")
+            
+    
+    
+        
         obstacle_detected = False 
             
         if lidar is not None:
