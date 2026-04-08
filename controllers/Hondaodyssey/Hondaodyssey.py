@@ -80,6 +80,7 @@ last_visible_cameras = 0
 #Adding a new variable: angle filter buffer
 #angle_filter_buffer = [0.0, 0.0, 0.0]
 angle_filter_buffer = [0.0, 0.0, 0.0]
+traffic_state = "GO"
 
 #------------------------------------------------------
 # TRAFFIC LIGHTS
@@ -385,18 +386,23 @@ while driver.step() != -1:
                 
             light = detect_traffic_light(image_top, top_width, top_height)
             if light == "RED":
+                traffic_state = "STOP"
+            elif light == "GREEN":
+                traffic_state = "GO"
+            elif light == "YELLOW":
+                if traffic_state != "STOP":
+                    traffic_state = "SLOW"
+            
+            if traffic_state == "STOP":
                 driver.setBrakeIntensity(1.0)
                 current_speed = 0.0
-                print("redddddd")
-            elif light == "YELLOW":
+                print("red light")
+            elif traffic_state == "SLOW":
                 current_speed = max(5.0, current_speed * 0.5)
-                print("yellowwwww")
-            elif light == "GREEN":
-                if current_speed == 0.0:
-                    current_speed = 10.0
-                print("greeeeeennnn")
-            
-    
+                print("slow down")
+            elif traffic_state == "GO":
+                pass
+                
     
         
         obstacle_detected = False 
