@@ -79,8 +79,17 @@ was_blind = False
 last_visible_cameras = 0
 #Adding a new variable: angle filter buffer
 #angle_filter_buffer = [0.0, 0.0, 0.0]
-angle_filter_buffer = [0.0, 0.0, 0.0]
+#update: im adding 2 more buffers for top and bottom parallel jits
+angle_filter_buffer = [0.0, 0.0, 0.0, 0.0, 0.0]
 traffic_state = "GO"
+
+#Update 2: new ghost memory blocks:
+memory_bottom_x_r = 0.0
+memory_top_x_r = 0.0
+frames_missing_r = 0
+memory_bottom_x_l = 0.0
+memory_top_x_l = 0.0
+frames_missing_l = 0
 
 #------------------------------------------------------
 # TRAFFIC LIGHTS
@@ -261,8 +270,11 @@ while driver.step() != -1:
                 
                 visible_cameras += 1
                 last_average_x = avg_x_r
+             
+             
         #PROCESS LEFT CAMERA:
             #Continue the code with the Right camera and average out error
+            
         pixel_count_left = 0
         sum_x_l = 0
         if Left_Camera is not None:
@@ -281,7 +293,8 @@ while driver.step() != -1:
                 avg_x_l = sum_x_l / pixel_count_left
                 target_x_l = width * 0.15
                 error += (avg_x_l - target_x_l) / width
-                visible_cameras += 1    
+                visible_cameras += 1
+                
         #DUAL PID
             #If visible_cameras > 0:
             #average error = total_error / visible_cameras
@@ -327,8 +340,8 @@ while driver.step() != -1:
             pos_r = (avg_x_r / width) if pixel_count_right > 0 else 0.0
             pos_l = pos_l = (avg_x_l / width) if (pixel_count_left > 0 and pixel_count_right == 0) else 0.0
             print(f"Cameras active: {visible_cameras} ||| L_Line is at: {pos_l:.2f} ||| R_Line is at: {pos_r:.2f} ||| Steer: {current_steering:.2f}")
+ 
 
-            
         #ELSE: for the blind spots
             #Hold steering wheel to the last known location/ange
             #set constant speed for recovery
@@ -355,7 +368,6 @@ while driver.step() != -1:
             
              
             print(f"Cameras active: {visible_cameras} ||| Line lost ||| L_Line is at: {pos_l:.2f} ||| R_Line is at: {pos_r:.2f} ||| Steer: {current_steering:.2f} ||| Speed: {current_speed:.1f} ||| Error: {error:.3f} ||| P:{p_term:.2f} I:{i_term:.2f} D:{d_term:.2f}")
-
     
     
 
