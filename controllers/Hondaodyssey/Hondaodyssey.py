@@ -179,7 +179,7 @@ while driver.step() != -1:
     current_steering = 0.0
     #Identifying keys
     up = False; down = False; right = False; left = False  
-    
+
     while key != -1:
         #Adding purpose to these delinquites
         if key == Keyboard.UP: up = True

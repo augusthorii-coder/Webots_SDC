@@ -50,8 +50,6 @@ BmwX5 {
     Camera {
       translation 1 -0.8 0
       rotation 0 1 0 0.32359869389957474
-      width 640
-      height 480
     }
   ]
   sensorsSlotCenter [
@@ -59,8 +57,6 @@ BmwX5 {
       translation 2 0.8 1.5
       rotation 0 1 0 0.323599
       name "Left_Camera"
-      width 640
-      height 480
     }
   ]
 }
