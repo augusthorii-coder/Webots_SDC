@@ -462,4 +462,3 @@ while driver.step() != -1:
         
     driver.setCruisingSpeed(current_speed)
     driver.setSteeringAngle(current_steering)
-
