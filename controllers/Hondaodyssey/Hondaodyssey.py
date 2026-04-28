@@ -17,7 +17,7 @@ ATCS PROJECT for a self driving car
 
 import math
 from vehicle import Driver
-from controller import Keyboard, Lidar, Camera
+from controller import Keyboard, Lidar, Camera, GPS, Compass
 
 
 
@@ -65,8 +65,22 @@ if Top_Camera is not None:
     Top_Camera.enable(TIME_STEP)
 else:
     print("Your top camera is NOT plugged in Twin")
+    
 #Goal: Implementing the a second camera into autopilot by possibly adding a WAYPOINT
+gps = driver.getDevice("gps")
+if gps is not None:
+    gps.enable(TIME_STEP)
+else:
+    print("your GPS is NOT plugged in twin")
 
+compass = driver.getDevice("compass")
+if compass is not None:
+    compass.enable(TIME_STEP)
+else:
+    print("your compass is NOT plugged in twin")
+    
+#now for the gps:
+TARGET_WAYPOINT = [50.0, -100.0]
 
 #to start in manual mode:
 current_speed = 0.0
@@ -125,6 +139,28 @@ frames_missing_l = 0
     #else:
         #return None  
         #no light detected 
+   
+nav_steering_desire = 0.0
+distance_to_target = 999.0
+if gps is not None and compass is not None:
+        current_pos = gps.getValues()
+        current_x = current_pos[0]
+        current_z = current_pos[2]
+        
+        comp_val = compass.getValues()
+        current_heading = math.atan2(comp_val[0], comp_val[2])
+        
+        dx = TARGET_WAYPOINT[0] - current_x
+        dz = TARGET_WAYPOINT[1] - current_z
+        distance_to_target = math.sqrt(dx**2 + dz**2)
+        
+        target_bearing = math.atan2(dx, dz)
+        angle_diff = target_bearing - current_heading
+        
+        while angle_diff > math.pi: angle_diff -= 2 * math.pi
+        while angle_diff < -math.pi: angle_diff += 2 * math.pi
+        
+        nav_steering_desire = angle_diff * 0.5
                 
 def detect_traffic_light(image, width, height):
     zone_size = 2
@@ -458,6 +494,15 @@ while driver.step() != -1:
             
             
     #Safety clamp for the Honda steering limits
+    if autodrive:
+        if abs(nav_steering_desire) > 0.3 or visible_cameras == 0:
+            current_steering = nav_steering_desire
+            print(f"currently on autopilot. Dist: {distance_to_target:.1f}")
+        
+        if distance_to_target < 3.0:
+            current_speed = 0.0
+            driver.setBrakeIntensity(1.0)
+            print("You reached your destination")
     current_steering = max(-0.5, min(0.5, current_steering))
         
     driver.setCruisingSpeed(current_speed)

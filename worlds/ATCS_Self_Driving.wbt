@@ -18,7 +18,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation -0.004998786494604909 0.9997489675962724 0.021840648428301166 0.45010921649562124
-  position -54.023344744317214 11.61781249946246 3.9985770706940817
+  position -59.31164640375985 11.5649277200303 6.553245708163822
   follow "vehicle"
   followType "Mounted Shot"
 }
@@ -35,6 +35,10 @@ BmwX5 {
     ""
   ]
   sensorsSlotFront [
+    Compass {
+    }
+    GPS {
+    }
     SickLms291 {
       name "lidar"
     }
@@ -65,7 +69,7 @@ GenericTrafficLight {
   translation -27 14.27 0
   rotation 0 0 1 3.141592653589793
   greenTime 15
-  state "green"
+  state "red"
 }
 AddLanesRoadSegment {
   translation -52 10 0.05
