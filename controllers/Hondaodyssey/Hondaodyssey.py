@@ -142,26 +142,9 @@ frames_missing_l = 0
    
 nav_steering_desire = 0.0
 distance_to_target = 999.0
-if gps is not None and compass is not None:
-        current_pos = gps.getValues()
-        current_x = current_pos[0]
-        current_z = current_pos[2]
-        
-        comp_val = compass.getValues()
-        current_heading = math.atan2(comp_val[0], comp_val[2])
-        
-        dx = TARGET_WAYPOINT[0] - current_x
-        dz = TARGET_WAYPOINT[1] - current_z
-        distance_to_target = math.sqrt(dx**2 + dz**2)
-        
-        target_bearing = math.atan2(dx, dz)
-        angle_diff = target_bearing - current_heading
-        
-        while angle_diff > math.pi: angle_diff -= 2 * math.pi
-        while angle_diff < -math.pi: angle_diff += 2 * math.pi
-        
-        nav_steering_desire = angle_diff * 0.5
-                
+calibrated_x_r = None
+calibrated_x_l = None
+    
 def detect_traffic_light(image, width, height):
     zone_size = 2
 
@@ -222,6 +205,21 @@ while driver.step() != -1:
 
     
     current_steering = 0.0
+    if gps is not None and compass is not None:
+        current_pos = gps.getValues()
+        current_x = current_pos[0]
+        current_z = current_pos[2]
+        comp_val = compass.getValues()
+        current_heading = math.atan2(comp_val[0], comp_val[2])
+        dx = TARGET_WAYPOINT[0] - current_x
+        dz = TARGET_WAYPOINT[1] - current_z
+        distance_to_target = math.sqrt(dx**2 + dz**2)
+        target_bearing = math.atan2(dx, dz)
+        angle_diff = target_bearing - current_heading
+        while angle_diff > math.pi: angle_diff -= 2 * math.pi
+        while angle_diff < -math.pi: angle_diff += 2 * math.pi
+        nav_steering_desire = angle_diff * 0.5
+        
     #Identifying keys
     up = False; down = False; right = False; left = False  
 
@@ -265,7 +263,7 @@ while driver.step() != -1:
         visible_cameras = 0
         width = camera.getWidth()
         height = camera.getHeight()
-        start_y = int(height * 0.4)
+        start_y = int(height * 0.3)
         
     #Preconditions:
         #The vehicle is in autopilot mode
@@ -288,7 +286,7 @@ while driver.step() != -1:
             image_r = camera.getImageArray()  
               
             for y in range(start_y, height, 2):
-                for x in range(int(width * 0.5), width, 2):
+                for x in range(int(width * 0.45), width, 2):
                     r, g, b = image_r[x][y]
                     is_white = (r + g + b) > 450 and abs(r - g) < 30 and abs(r - b) < 30
                     if is_white:
@@ -298,14 +296,30 @@ while driver.step() != -1:
                 
             if pixel_count_right > 0:
                 avg_x_r = sum_x_r / pixel_count_right
-                target_x_r = width * 0.77
+                if calibrated_x_r is None:
+                    calibrated_x_r = avg_x_r
+                else:
+                    calibrated_x_r = calibrated_x_r * 0.995 + avg_x_r * 0.005
+                memory_bottom_x_r = avg_x_r 
+                frames_missing_r = 0
+                target_x_r = calibrated_x_r 
                 error += (avg_x_r - target_x_r) / width
-                
                 if avg_x_r > width * 0.85:
                     error *= 1.5
-                
                 visible_cameras += 1
                 last_average_x = avg_x_r
+            elif frames_missing_r < 6 and memory_bottom_x_r != 0.0:
+                avg_x_r = memory_bottom_x_r
+                frames_missing_r += 1
+                target_x_r = calibrated_x_r if calibrated_x_r else width * 0.77
+                error += (avg_x_r - target_x_r) / width
+                pixel_count_right = 1
+                visible_cameras += 1
+                print(f"R memory: frame {frames_missing_r}/6")
+            else:
+                avg_x_r = 0.0
+                
+                
              
              
         #PROCESS LEFT CAMERA:
@@ -317,7 +331,7 @@ while driver.step() != -1:
             image_l = Left_Camera.getImageArray()
                   
             for y in range(start_y, height, 2):
-                for x in range(0, int(width * 0.4), 2):
+                for x in range(0, int(width * 0.55), 2):
                     r, g, b = image_l[x][y]
                     is_white = (r + g + b) > 450 and abs(r - g) < 30 and abs(r - b) < 30
                     if is_white:
@@ -327,9 +341,23 @@ while driver.step() != -1:
             
             if pixel_count_left > 0:
                 avg_x_l = sum_x_l / pixel_count_left
-                target_x_l = width * 0.15
+                if calibrated_x_l is None:
+                    calibrated_x_l = avg_x_l
+                memory_bottom_x_l = avg_x_l
+                frames_missing_l = 0
+                target_x_l = calibrated_x_l
                 error += (avg_x_l - target_x_l) / width
                 visible_cameras += 1
+            elif frames_missing_l < 6 and memory_bottom_x_l != 0.0:
+                avg_x_l = memory_bottom_x_l
+                frames_missing_l += 1
+                target_x_l = calibrated_x_l if calibrated_x_l else width * 0.15
+                error += (avg_x_l - target_x_l) / width
+                pixel_count_left = 1
+                visible_cameras += 1
+                print(f"L memory: frame {frames_missing_l}/6")
+            else:
+                avg_x_l = 0.0
                 
         #DUAL PID
             #If visible_cameras > 0:
@@ -342,7 +370,9 @@ while driver.step() != -1:
             #look only 3 frame-angles to smoothe out movement of the car
             angle_filter_buffer.pop(0)
             angle_filter_buffer.append(error)
-            error = sum(angle_filter_buffer) / 3.0
+            error = sum(angle_filter_buffer) / len(angle_filter_buffer)
+            if abs(error) < 0.02:
+                error = 0.0
             
             if was_blind or visible_cameras != last_visible_cameras:
                 last_error = error
@@ -353,19 +383,19 @@ while driver.step() != -1:
             integral = max(min(integral, 30.0), -30.0) 
             integral *= 0.9
             #Turn
-            p_term = error * 0.1
+            p_term = error * 0.06
             #memory
             i_term = integral * 0.05
             #overshoot
-            d_term = (error - last_error) * 3.0
+            d_term = (error - last_error) * 1.5
 
             
             current_steering = p_term + i_term + d_term
             
-            if current_steering - last_steering > 0.15:
-                current_steering = last_steering + 0.15
-            elif current_steering - last_steering < -0.15:
-                current_steering = last_steering - 0.15
+            if current_steering - last_steering > 0.08:
+                current_steering = last_steering + 0.08
+            elif current_steering - last_steering < -0.08:
+                current_steering = last_steering - 0.08
                 
             turn_factor = 1.0 - abs(current_steering) * 1.2
             current_speed = max(15.0, 20.0 * turn_factor)
@@ -444,12 +474,15 @@ while driver.step() != -1:
             if traffic_state == "STOP":
                 driver.setBrakeIntensity(1.0)
                 current_speed = 0.0
-                print("red light")
+                current_steering = nav_steering_desire
+                print(f"red light ||| GPS: {nav_steering_desire:.2f}")
             elif traffic_state == "SLOW":
                 current_speed = max(5.0, current_speed * 0.5)
-                print("slow down")
+                current_steering = nav_steering_desire
+                print(f"GPS: {nav_steering_desire:.2f}")
             elif traffic_state == "GO":
-                pass
+                current_steering = nav_steering_desire
+                print(f"green ||| GPS: {nav_steering_desire:.2f}")
                 
     
         
@@ -495,10 +528,9 @@ while driver.step() != -1:
             
     #Safety clamp for the Honda steering limits
     if autodrive:
-        if abs(nav_steering_desire) > 0.3 or visible_cameras == 0:
-            current_steering = nav_steering_desire
-            print(f"currently on autopilot. Dist: {distance_to_target:.1f}")
-        
+        if visible_cameras == 0 and traffic_state == "GO":
+            current_steering = last_steering * last_loc * 0.5
+            print(f"blind recovery. Dist: {distance_to_target:.1f}")
         if distance_to_target < 3.0:
             current_speed = 0.0
             driver.setBrakeIntensity(1.0)
