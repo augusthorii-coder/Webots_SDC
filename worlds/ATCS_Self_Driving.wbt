@@ -69,7 +69,7 @@ GenericTrafficLight {
   translation -27 14.27 0
   rotation 0 0 1 3.141592653589793
   greenTime 15
-  state "red"
+  state "green"
 }
 AddLanesRoadSegment {
   translation -52 10 0.05

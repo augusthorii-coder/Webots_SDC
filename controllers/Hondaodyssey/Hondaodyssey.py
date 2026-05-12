@@ -21,7 +21,7 @@ from controller import Keyboard, Lidar, Camera, GPS, Compass
 
 
 
-
+ 
 #Constants
 TIME_STEP = 10
 MAX_SPEED = 150.0
@@ -298,12 +298,10 @@ while driver.step() != -1:
                 avg_x_r = sum_x_r / pixel_count_right
                 if calibrated_x_r is None:
                     calibrated_x_r = avg_x_r
-                else:
-                    calibrated_x_r = calibrated_x_r * 0.995 + avg_x_r * 0.005
                 memory_bottom_x_r = avg_x_r 
                 frames_missing_r = 0
                 target_x_r = calibrated_x_r 
-                error += (avg_x_r - target_x_r) / width
+                error += (target_x_r - avg_x_r) / width
                 if avg_x_r > width * 0.85:
                     error *= 1.5
                 visible_cameras += 1
@@ -312,7 +310,7 @@ while driver.step() != -1:
                 avg_x_r = memory_bottom_x_r
                 frames_missing_r += 1
                 target_x_r = calibrated_x_r if calibrated_x_r else width * 0.77
-                error += (avg_x_r - target_x_r) / width
+                error += (target_x_r - avg_x_r) / width
                 pixel_count_right = 1
                 visible_cameras += 1
                 print(f"R memory: frame {frames_missing_r}/6")
@@ -383,7 +381,7 @@ while driver.step() != -1:
             integral = max(min(integral, 30.0), -30.0) 
             integral *= 0.9
             #Turn
-            p_term = error * 0.06
+            p_term = error * 0.1
             #memory
             i_term = integral * 0.05
             #overshoot
@@ -471,6 +469,8 @@ while driver.step() != -1:
                 if traffic_state != "STOP":
                     traffic_state = "SLOW"
             
+        if light is not None:
+                 
             if traffic_state == "STOP":
                 driver.setBrakeIntensity(1.0)
                 current_speed = 0.0
