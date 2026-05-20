@@ -13,12 +13,13 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/buildings/protos/BigGlassTower.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/buildings/protos/CommercialBuilding.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/traffic/protos/GenericTrafficLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/traffic/protos/PedestrianCrossing.proto"
 
 WorldInfo {
 }
 Viewpoint {
   orientation -0.004998786494604909 0.9997489675962724 0.021840648428301166 0.45010921649562124
-  position -59.31164640375985 11.5649277200303 6.553245708163822
+  position -59.20385598968195 11.566005660102654 6.50117439907484
   follow "vehicle"
   followType "Mounted Shot"
 }
@@ -48,7 +49,7 @@ BmwX5 {
       translation -3 0 1.2
       rotation 0 0 1 3.141592653589793
       name "Top_Camera"
-      fieldOfView 1
+      fieldOfView 0.5
     }
   ]
   sensorsSlotTop [
@@ -69,7 +70,7 @@ GenericTrafficLight {
   translation -27 14.27 0
   rotation 0 0 1 3.141592653589793
   greenTime 15
-  state "green"
+  state "red"
 }
 AddLanesRoadSegment {
   translation -52 10 0.05
@@ -110,4 +111,10 @@ AddLaneRoadSegment {
 }
 BigGlassTower {
   translation -18.15 2.75 0
+}
+PedestrianCrossing {
+  translation -37 11 0
+  rotation 0 0 1 1.5707996938995747
+  size 21 5
+  textureFiltering 3
 }
