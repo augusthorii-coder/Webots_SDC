@@ -14,6 +14,8 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/buildings/protos/CommercialBuilding.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/traffic/protos/GenericTrafficLight.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/traffic/protos/PedestrianCrossing.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/humans/pedestrian/protos/Pedestrian.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/traffic/protos/SpeedLimitSign.proto"
 
 WorldInfo {
 }
@@ -70,7 +72,7 @@ GenericTrafficLight {
   translation -27 14.27 0
   rotation 0 0 1 3.141592653589793
   greenTime 15
-  state "red"
+  state "green"
 }
 AddLanesRoadSegment {
   translation -52 10 0.05
@@ -117,4 +119,12 @@ PedestrianCrossing {
   rotation 0 0 1 1.5707996938995747
   size 21 5
   textureFiltering 3
+}
+Pedestrian {
+  translation -37 10 1.27
+  rotation 0 0 1 1.5707996938995747
+}
+SpeedLimitSign {
+  translation -20 14.5 0
+  rotation 0 0 1 -3.010695613280012
 }

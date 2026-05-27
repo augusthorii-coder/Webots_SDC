@@ -35,53 +35,25 @@ driver.setCruisingSpeed(0.0)
 keyboard = Keyboard()
 keyboard.enable(TIME_STEP)
 
+def init_device(name, *fns):
+    dev = driver.getDevice(name)
+    if dev:
+        for fn in fns: fn(dev)
+    else:
+        print(f"Device '{name}' NOT found")
+    return dev
 
-#Initialization of the Lidar sensor
-lidar = driver.getDevice("lidar") 
-if lidar is not None:
-    lidar.enable(TIME_STEP)
-    lidar.enablePointCloud()
-else:
-    print("Twin your lidar is NOT there")
+lidar = init_device("lidar", lambda d: d.enable(TIME_STEP), lambda d: d.enablePointCloud())
+camera = init_device("camera", lambda d: d.enable(TIME_STEP))
+Left_Camera = init_device("Left_Camera", lambda d: d.enable(TIME_STEP))
+Top_Camera = init_device("Top_Camera", lambda d: d.enable(TIME_STEP))
+gps = init_device("gps", lambda d: d.enable(TIME_STEP))
+compass = init_device("compass", lambda d: d.enable(TIME_STEP))
+#__________________________________________________________
+#Variables
+#----------------------------------------------------------
 
-#The Initialization of the Right Camera 
-camera = driver.getDevice("camera")
-if camera is not None:
-    camera.enable(TIME_STEP)
-else:
-    print("Your right camera is NOT plugged in Twin")
-
-
-#The Initialization of the left Camera
-Left_Camera = driver.getDevice("Left_Camera")
-if Left_Camera is not None: 
-    Left_Camera.enable(TIME_STEP)
-else:
-    print("Your left camera is NNOT plugged in Twin")
-
-
-Top_Camera = driver.getDevice("Top_Camera")
-if Top_Camera is not None:
-    Top_Camera.enable(TIME_STEP)
-else:
-    print("Your top camera is NOT plugged in Twin")
-    
-#Goal: Implementing the a second camera into autopilot by possibly adding a WAYPOINT
-gps = driver.getDevice("gps")
-if gps is not None:
-    gps.enable(TIME_STEP)
-else:
-    print("your GPS is NOT plugged in twin")
-
-compass = driver.getDevice("compass")
-if compass is not None:
-    compass.enable(TIME_STEP)
-else:
-    print("your compass is NOT plugged in twin")
-    
-#now for the gps:
 TARGET_WAYPOINT = [50.0, -100.0]
-
 #to start in manual mode:
 current_speed = 0.0
 autodrive = False
@@ -96,7 +68,6 @@ last_visible_cameras = 0
 #update: im adding 2 more buffers for top and bottom parallel jits
 angle_filter_buffer = [0.0, 0.0, 0.0]
 traffic_state = "GO"
-
 #Update 2: new ghost memory blocks:
 memory_bottom_x_r = 0.0
 memory_top_x_r = 0.0
@@ -106,14 +77,19 @@ memory_top_x_l = 0.0
 frames_missing_l = 0
 last_loc = 1
 frames_since_red = 0
-
+nav_steering_desire = 0.0
+distance_to_target = 999.0
+calibrated_x_r = None
+calibrated_x_l = None
 
 #------------------------------------------------------
 # TRAFFIC LIGHTS
 #______________________________________________________
             
+            
+            
+            
 #F'n detect_traffic_light(image, width, height):
-
     #set red_pixels = 0
     #set green_pixels = 0
     #set yellow_pixels = 0
@@ -142,100 +118,127 @@ frames_since_red = 0
     #else:
         #return None  
         #no light detected 
-   
-nav_steering_desire = 0.0
-distance_to_target = 999.0
-calibrated_x_r = None
-calibrated_x_l = None
-    
+
+def color_match(r, g, b, target, tol=35):
+    return abs(r-target[0]) < tol and abs(g-target[1]) < tol and abs(b-target[2]) < tol
+
 def detect_traffic_light(image, width, height):
     zone_size = 2
-
-
 #green:
 #63, 192, 123
 #75, 207, 124
-
 #yellow:
 #209, 179, 99
 #211, 182, 115
 #222, 192, 90
-
 #red:
 #209, 61, 75
 #210, 78, 93
 #223, 79, 81
-
     target_red = (215, 75, 85)
     target_yellow = (215, 185, 100)
     target_green = (70, 200, 125)
     tolerance = 35
-    
     for zone_y in range(0, height, zone_size): 
         for zone_x in range(0, width, zone_size):
             red = 0; green = 0; yellow = 0
-
             for y in range(zone_y, min(zone_y + zone_size, height)):
                 for x in range(zone_x, min(zone_x + zone_size, width)):
                     r, g, b = image[x][y]
-                    if abs(r - target_red[0]) < tolerance and abs(g - target_red[1]) < tolerance and abs(b - target_red[2]) < tolerance:
-                        red += 1
-                    elif abs(r - target_yellow[0]) < tolerance and abs(g - target_yellow[1]) < tolerance and abs(b - target_yellow[2]) < tolerance:
-                        yellow += 1
-                    elif abs(r - target_green[0]) < tolerance and abs(g - target_green[1]) < tolerance and abs(b - target_green[2]) < tolerance:
-                        green += 1
-
+                    if color_match(r, g, b, target_red): red += 1
+                    elif color_match(r, g, b, target_yellow): yellow += 1
+                    elif color_match(r, g, b, target_green): green += 1
+                    
             if red >= 2:
                 return "RED"
             elif green >= 2:
                 return "GREEN"
             elif yellow >= 2:
                 return "YELLOW"
-
     return None
 
+def compute_nav(gps_dev, compass_dev, target):
+    pos = gps_dev.getValues()    
+    comp = compass_dev.getValues()
+    heading = math.atan2(comp[0], comp[2])
+    dx, dz  = target[0] - pos[0], target[1] - pos[2]
+    dist = math.sqrt(dx**2 + dz**2)
+    diff = math.atan2(dx, dz) - heading
+    while diff >  math.pi: diff -= 2 * math.pi
+    while diff < -math.pi: diff += 2 * math.pi
+    return max(-0.5, min(0.5, diff * 0.5)), dist
+
+def read_keys(kb):
+    up = down = left = right = toggle = False
+    k = kb.getKey()
+    while k != -1:
+        if k == Keyboard.UP: up = True
+        if k == Keyboard.DOWN: down = True
+        if k == Keyboard.LEFT: left = True
+        if k == Keyboard.RIGHT: right = True
+        if k == ord('A'): toggle = True
+        k = kb.getKey()
+    return up, down, left, right, toggle
+
+def is_white(r, g, b):
+    return (r + g + b) > 450 and abs(r - g) < 30 and abs(r - b) < 30
+    
+def scan_camera(image, x_start, x_end, width, height, memory_x, calibrated_x, frames_missing, label):
+    start_y = int(height * 0.3)
+    count = total = 0
+    for y in range(start_y, height, 2):
+        for x in range(x_start, x_end, 2):
+            r, g, b = image[x][y]
+            if is_white(r, g, b): total += x; count += 1
+
+        avg_x = 0.0
+        if count > 0:
+        avg_x = total / count
+        if memory_x != 0.0 and abs(avg_x - memory_x) > width * 0.25:
+            count = 0; avg_x = 0.0
+
+        if count > 0:
+            if calibrated_x is None: calibrated_x = avg_x
+            memory_x = avg_x; frames_missing = 0
+            err = (calibrated_x - avg_x) / width
+            if avg_x > width * 0.85: err *= 1.5
+            return err, memory_x, calibrated_x, frames_missing, count, avg_x
+
+        if frames_missing < 6 and memory_x != 0.0:
+            frames_missing += 1
+            target = calibrated_x or (width * (0.77 if label=="R" else 0.15))
+            print(f"{label} memory: frame {frames_missing}/6")
+            return (target - memory_x) / width, memory_x, calibrated_x, frames_missing, 1, memory_x
+
+        return 0.0, memory_x, calibrated_x, frames_missing, 0, 0.0
+
+def update_traffic(light, state, frames_red):
+    if light == "RED": return "STOP", 0
+    elif light == "GREEN": return "GO", 0
+    elif light == "YELLOW": return ("STOP" if state == "STOP" else "SLOW"), 0
+    if state == "STOP":
+        frames_red += 1
+        if frames_red > 150: return "GO", 0
+    return state, frames_red
 
 print("Use the up/down/left/right buttons to move")
 print("Press A to start the AUTOPILOT")
 
-
-
-
-
 #Main Loop
 while driver.step() != -1:
     key = keyboard.getKey()
-
     
     current_steering = 0.0
     if gps is not None and compass is not None:
-        current_pos = gps.getValues()
-        current_x = current_pos[0]
-        current_z = current_pos[2]
-        comp_val = compass.getValues()
-        current_heading = math.atan2(comp_val[0], comp_val[2])
-        dx = TARGET_WAYPOINT[0] - current_x
-        dz = TARGET_WAYPOINT[1] - current_z
-        distance_to_target = math.sqrt(dx**2 + dz**2)
-        target_bearing = math.atan2(dx, dz)
-        angle_diff = target_bearing - current_heading
-        while angle_diff > math.pi: angle_diff -= 2 * math.pi
-        while angle_diff < -math.pi: angle_diff += 2 * math.pi
-        nav_steering_desire = angle_diff * 0.5
-        
+        nav_steering_desire, distance_to_target = compute_nav(gps, compass, TARGET_WAYPOINT)
+    
     #Identifying keys
     up = False; down = False; right = False; left = False  
 
-    while key != -1:
-        #Adding purpose to these delinquites
-        if key == Keyboard.UP: up = True
-        if key == Keyboard.DOWN: down = True
-        if key == Keyboard.LEFT: left = True
-        if key == Keyboard.RIGHT: right = True
-        #Toggle on and off for the autopilot:
-        if key == ord('A'): autodrive = not autodrive
-        key = keyboard.getKey()
     
+    
+    up, down, left, right, toggle = read_keys(keyboard)
+    if toggle: autodrive = not autodrive
     if not autodrive:
         #boring manual coding part
         if up:
@@ -283,90 +286,24 @@ while driver.step() != -1:
         #PROCESS RIGHT CAMERA:
             #scan the bottom right like before
             #Code stays the same as previous
-        pixel_count_right = 0
-        sum_x_r = 0
-        if camera is not None:
-            image_r = camera.getImageArray()  
-              
-            for y in range(start_y, height, 2):
-                for x in range(int(width * 0.25), width, 2):
-                    r, g, b = image_r[x][y]
-                    is_white = (r + g + b) > 450 and abs(r - g) < 30 and abs(r - b) < 30
-                    if is_white:
-                        sum_x_r += x
-                        pixel_count_right += 1  
-          
-                
-            if pixel_count_right > 0:
-                avg_x_r = sum_x_r / pixel_count_right
-                if memory_bottom_x_r != 0.0 and abs(avg_x_r - memory_bottom_x_r) > width * 0.25:
-                    pixel_count_right = 0
-                    avg_x_r = 0.0
-            if pixel_count_right > 0:
-                if calibrated_x_r is None:
-                    calibrated_x_r = avg_x_r
-                memory_bottom_x_r = avg_x_r 
-                frames_missing_r = 0
-                target_x_r = calibrated_x_r 
-                error += (target_x_r - avg_x_r) / width
-                if avg_x_r > width * 0.85:
-                    error *= 1.5
-                visible_cameras += 1
-                last_average_x = avg_x_r
-            elif frames_missing_r < 6 and memory_bottom_x_r != 0.0:
-                avg_x_r = memory_bottom_x_r
-                frames_missing_r += 1
-                target_x_r = calibrated_x_r if calibrated_x_r else width * 0.77
-                error += (target_x_r - avg_x_r) / width
-                pixel_count_right = 1
-                visible_cameras += 1
-                print(f"R memory: frame {frames_missing_r}/6")
-            else:
-                avg_x_r = 0.0
-                
-                
-             
-             
+        err_r, memory_bottom_x_r, calibrated_x_r, frames_missing_r, pixel_count_right, avg_x_r = \
+            scan_camera(camera.getImageArray(), int(width*0.25), width, width, height,
+                memory_bottom_x_r, calibrated_x_r, frames_missing_r, "R")   
+        
+        if pixel_count_right > 0:
+            error += err_r
+            visible_cameras += 1
+            last_average_x = avg_x_r 
         #PROCESS LEFT CAMERA:
             #Continue the code with the Right camera and average out error
             
-        pixel_count_left = 0
-        sum_x_l = 0
-        if Left_Camera is not None:
-            image_l = Left_Camera.getImageArray()
-                  
-            for y in range(start_y, height, 2):
-                for x in range(0, int(width * 0.55), 2):
-                    r, g, b = image_l[x][y]
-                    is_white = (r + g + b) > 450 and abs(r - g) < 30 and abs(r - b) < 30
-                    if is_white:
-                        sum_x_l += x
-                        pixel_count_left += 1
-
-            
-            if pixel_count_left > 0:
-                avg_x_l = sum_x_l / pixel_count_left
-                if memory_bottom_x_l != 0.0 and abs(avg_x_l - memory_bottom_x_l) > width * 0.25:
-                    pixel_count_left = 0
-                    avg_x_l = 0.0
-                elif calibrated_x_l is None:
-                    calibrated_x_l = avg_x_l
-                memory_bottom_x_l = avg_x_l
-                frames_missing_l = 0
-                target_x_l = calibrated_x_l
-                error += (target_x_l - avg_x_l) / width
-                visible_cameras += 1
-            elif frames_missing_l < 6 and memory_bottom_x_l != 0.0:
-                avg_x_l = memory_bottom_x_l
-                frames_missing_l += 1
-                target_x_l = calibrated_x_l if calibrated_x_l else width * 0.15
-                error += (target_x_l - avg_x_l) / width
-                pixel_count_left = 1
-                visible_cameras += 1
-                print(f"L memory: frame {frames_missing_l}/6")
-            else:
-                avg_x_l = 0.0
-                
+        err_l, memory_bottom_x_l, calibrated_x_l, frames_missing_l, pixel_count_left, avg_x_l = \
+            scan_camera(Left_Camera.getImageArray(), 0, int(width*0.65), width, height,
+                memory_bottom_x_l, calibrated_x_l, frames_missing_l, "L")
+        
+        if pixel_count_left > 0:
+            error += err_l
+            visible_cameras += 1        
         #DUAL PID
             #If visible_cameras > 0:
             #average error = total_error / visible_cameras
@@ -391,7 +328,8 @@ while driver.step() != -1:
             integral = max(min(integral, 30.0), -30.0) 
             integral *= 0.9
             #Turn
-            p_term = error * 0.6
+            p_gain = 0.6 + min(abs(error) * 1.5, 0.6)
+            p_term = error * p_gain
             #memory
             i_term = integral * 0.05
             #overshoot
@@ -400,19 +338,20 @@ while driver.step() != -1:
             
             current_steering = p_term + i_term + d_term
             
-            if current_steering - last_steering > 0.15:
-                current_steering = last_steering + 0.15
-            elif current_steering - last_steering < -0.15:
-                current_steering = last_steering - 0.15
+            rate_limit = min(0.15 + abs(error) * 0.4, 0.30)
+            if current_steering - last_steering > rate_limit:
+                current_steering = last_steering + rate_limit
+            elif current_steering - last_steering < -rate_limit:
+                current_steering = last_steering - rate_limit
                 
-            turn_factor = 1.0 - abs(current_steering) * 1.5
-            current_speed = max(10.0, 20.0 * turn_factor)
+            turn_factor = 1.0 - abs(current_steering) * 2.0
+            current_speed = max(17.0, 25.0 * turn_factor)
             last_error = error
             last_steering = current_steering
             driver.setBrakeIntensity(0.0)
             
             pos_r = (avg_x_r / width) if pixel_count_right > 0 else 0.0
-            pos_l = pos_l = (avg_x_l / width) if (pixel_count_left > 0 and pixel_count_right == 0) else 0.0
+            pos_l = (avg_x_l / width) if pixel_count_left  > 0 else 0.0
             print(f"Cameras active: {visible_cameras} ||| L_Line is at: {pos_l:.2f} ||| R_Line is at: {pos_r:.2f} ||| Steer: {current_steering:.2f}")
  
 
@@ -428,7 +367,7 @@ while driver.step() != -1:
                 last_loc = 1
             else: 
                 last_loc = -1
-            current_steering = last_steering * 2 #* last_loc
+            current_steering = abs(last_steering) * 2 + 1 #* last_loc
             current_speed = 10.0
             
             
@@ -469,25 +408,9 @@ while driver.step() != -1:
             #elif result is "GREEN":
                 #continue with speed
                 #print "GREEN LIGHT"
-                
-            light = detect_traffic_light(image_top, top_width, top_height)
-            if light == "RED":
-                traffic_state = "STOP"
-                frames_since_red = 0
-            elif light == "GREEN":
-                traffic_state = "GO"
-                frames_since_red = 0
-            elif light == "YELLOW":
-                if traffic_state != "STOP":
-                    traffic_state = "SLOW"
-                frames_since_red = 0
-            
-            if traffic_state == "STOP":
-                frames_since_red += 1
-                if frames_since_red > 150:
-                    traffic_state = "GO"
-                    frames_since_red = 0
-            
+        light = detect_traffic_light(image_top, top_width, top_height)
+        traffic_state, frames_since_red = update_traffic(light, traffic_state, frames_since_red)
+        
         if traffic_state == "STOP":
             driver.setBrakeIntensity(1.0)
             current_speed = 0.0
@@ -540,7 +463,7 @@ while driver.step() != -1:
                     driver.setBrakeIntensity(1.0)
                     current_speed = 0.0
                     print("OH MY GOD YOURE ABOUT TO CRASH")
-                
+       
             #______________________________________________________
             
             
