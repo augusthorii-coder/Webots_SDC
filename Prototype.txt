@@ -27,9 +27,7 @@ TIME_STEP = 10
 MAX_SPEED = 150.0
 TURN_ANGLE = 0.5
 
-
 #Initialization
-
 driver = Driver()
 driver.setSteeringAngle(0.0)
 driver.setCruisingSpeed(0.0)
@@ -51,12 +49,9 @@ Left_Camera = init_device("Left_Camera", lambda d: d.enable(TIME_STEP))
 Top_Camera = init_device("Top_Camera", lambda d: d.enable(TIME_STEP))
 gps = init_device("gps", lambda d: d.enable(TIME_STEP))
 compass = init_device("compass", lambda d: d.enable(TIME_STEP))
-
-
 #__________________________________________________________
 #Variables
 #----------------------------------------------------------
-
 
 TARGET_WAYPOINT = [50.0, -100.0]
 #to start in manual mode:
@@ -86,8 +81,7 @@ nav_steering_desire = 0.0
 distance_to_target = 999.0
 calibrated_x_r = None
 calibrated_x_l = None
-frames_since_any_light = 999
-frames_seeing_red = 0
+
 #------------------------------------------------------
 # TRAFFIC LIGHTS
 #______________________________________________________
@@ -157,12 +151,11 @@ def detect_traffic_light(image, width, height):
                     
             if red >= 2:
                 return "RED"
-            elif green >= 1:
+            elif green >= 2:
                 return "GREEN"
             elif yellow >= 2:
                 return "YELLOW"
     return None
-
 
 def compute_nav(gps_dev, compass_dev, target):
     pos = gps_dev.getValues()    
@@ -174,7 +167,6 @@ def compute_nav(gps_dev, compass_dev, target):
     while diff >  math.pi: diff -= 2 * math.pi
     while diff < -math.pi: diff += 2 * math.pi
     return max(-0.5, min(0.5, diff * 0.5)), dist
-
 
 def read_keys(kb):
     up = down = left = right = toggle = False
@@ -188,10 +180,8 @@ def read_keys(kb):
         k = kb.getKey()
     return up, down, left, right, toggle
 
-
 def is_white(r, g, b):
     return (r + g + b) > 450 and abs(r - g) < 30 and abs(r - b) < 30
-    
     
 def scan_camera(image, x_start, x_end, width, height, memory_x, calibrated_x, frames_missing, label):
     start_y = int(height * 0.3)
@@ -206,22 +196,25 @@ def scan_camera(image, x_start, x_end, width, height, memory_x, calibrated_x, fr
         avg_x = total / count
         if memory_x != 0.0 and abs(avg_x - memory_x) > width * 0.25:
             count = 0; avg_x = 0.0
+
     if count > 0:
         if calibrated_x is None: calibrated_x = avg_x
         memory_x = avg_x; frames_missing = 0
         err = (calibrated_x - avg_x) / width
         if avg_x > width * 0.85: err *= 1.5
         return err, memory_x, calibrated_x, frames_missing, count, avg_x
+
     if frames_missing < 6 and memory_x != 0.0:
         frames_missing += 1
         target = calibrated_x or (width * (0.77 if label=="R" else 0.15))
         print(f"{label} Zer memory: Zer frame {frames_missing}/6")
         return (target - memory_x) / width, memory_x, calibrated_x, frames_missing, 1, memory_x
+
     return 0.0, memory_x, calibrated_x, frames_missing, 0, 0.0 
     
-    
 def update_traffic(light, state, frames_red):
-    if light == "GREEN": return "GO", 0
+    if light == "RED": return "STOP", 0
+    elif light == "GREEN": return "GO", 0
     elif light == "YELLOW": return ("STOP" if state == "STOP" else "SLOW"), 0
     if state == "STOP":
         frames_red += 1
@@ -231,12 +224,7 @@ def update_traffic(light, state, frames_red):
 print("Use the up/down/left/right buttons to move")
 print("Press A to start the AUTOPILOT")
 
-
-#__________________________________________________________
 #Main Loop
-#----------------------------------------------------------
-
-
 while driver.step() != -1:
 
     
@@ -421,21 +409,12 @@ while driver.step() != -1:
                 #continue with speed
                 #print "GREEN LIGHT"
             light = detect_traffic_light(image_top, top_width, top_height)
-            if light == "RED":
-                frames_seeing_red += 1
-                if frames_seeing_red > 100:
-                    traffic_state = "STOP"
-                    frames_since_red = 0
-            else:
-                frames_seeing_red = 0
-                traffic_state, frames_since_red = update_traffic(light, traffic_state, frames_since_red)
-            if light is not None: frames_since_any_light = 0
-            else: frames_since_any_light += 1
-            
+            traffic_state, frames_since_red = update_traffic(light, traffic_state, frames_since_red)
+        
         if traffic_state == "STOP":
             driver.setBrakeIntensity(1.0)
             current_speed = 0.0
-            current_steering = 0 # nav_steering_desire
+            current_steering = nav_steering_desire
             if light is not None:
                 print(f"red light ||| GPS: {nav_steering_desire:.2f}")
         elif traffic_state == "SLOW":
@@ -443,9 +422,9 @@ while driver.step() != -1:
             current_steering = nav_steering_desire
             if light is not None:
                 print(f"slow ||| GPS: {nav_steering_desire:.2f}")
-        elif traffic_state == "GO":
+        elif traffic_state == "GO" and light is not None:
             driver.setBrakeIntensity(0.0)
-            if light is not None and frames_since_any_light < 120:
+            if light is not None:
                 current_steering = nav_steering_desire
                 last_steering = max(-0.5, min(0.5, current_steering))
                 print(f"green ||| GPS: {nav_steering_desire:.2f}")

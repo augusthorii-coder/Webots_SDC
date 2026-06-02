@@ -15,7 +15,6 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/traffic/protos/GenericTrafficLight.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/traffic/protos/PedestrianCrossing.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/humans/pedestrian/protos/Pedestrian.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/traffic/protos/SpeedLimitSign.proto"
 
 WorldInfo {
 }
@@ -115,16 +114,13 @@ BigGlassTower {
   translation -18.15 2.75 0
 }
 PedestrianCrossing {
-  translation -37 11 0
+  translation -37 11 -0.14
   rotation 0 0 1 1.5707996938995747
   size 21 5
   textureFiltering 3
+  enableBoundingObject FALSE
 }
 Pedestrian {
-  translation -37 10 1.27
+  translation -37 6.05 1.27
   rotation 0 0 1 1.5707996938995747
-}
-SpeedLimitSign {
-  translation -20 14.5 0
-  rotation 0 0 1 -3.010695613280012
 }
