@@ -32,7 +32,7 @@
   
 - [x] Implementing the node into the BMW
 
-- [ ] More advanced security tech
+- [x] More advanced security tech
 
 - [x] Asset testing (along side different cars)
 
@@ -40,6 +40,6 @@
 
 - [x] Adding traffic light sensing using specific color rgbs 
 
-- [ ] making sure the car gots PARALLEL with the lanes
+- [x] making sure the car gots PARALLEL with the lanes
 
 - [ ] testing other methods instead of finding average pixels location
