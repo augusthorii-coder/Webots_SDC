@@ -88,6 +88,10 @@ calibrated_x_r = None
 calibrated_x_l = None
 frames_since_any_light = 999
 
+
+
+
+
 #------------------------------------------------------
 # TRAFFIC LIGHTS
 #______________________________________________________
@@ -164,6 +168,8 @@ def detect_traffic_light(image, width, height):
     return None
 
 
+
+
 def compute_nav(gps_dev, compass_dev, target):
     pos = gps_dev.getValues()    
     comp = compass_dev.getValues()
@@ -174,6 +180,9 @@ def compute_nav(gps_dev, compass_dev, target):
     while diff >  math.pi: diff -= 2 * math.pi
     while diff < -math.pi: diff += 2 * math.pi
     return max(-0.5, min(0.5, diff * 0.5)), dist
+
+
+
 
 
 def read_keys(kb):
@@ -189,8 +198,14 @@ def read_keys(kb):
     return up, down, left, right, toggle
 
 
+
+
+
 def is_white(r, g, b):
     return (r + g + b) > 450 and abs(r - g) < 30 and abs(r - b) < 30
+    
+    
+    
     
     
 def scan_camera(image, x_start, x_end, width, height, memory_x, calibrated_x, frames_missing, label):
@@ -218,6 +233,9 @@ def scan_camera(image, x_start, x_end, width, height, memory_x, calibrated_x, fr
         print(f"{label} Zer memory: Zer frame {frames_missing}/6")
         return (target - memory_x) / width, memory_x, calibrated_x, frames_missing, 1, memory_x
     return 0.0, memory_x, calibrated_x, frames_missing, 0, 0.0 
+   
+   
+   
     
     
 def update_traffic(light, state, frames_red):
@@ -229,13 +247,26 @@ def update_traffic(light, state, frames_red):
         if frames_red > 150: return "GO", 0
     return state, frames_red
 
+
+
+
+
 print("Use the up/down/left/right buttons to move")
 print("Press A to start the AUTOPILOT")
+
+
+
+
+
 
 
 #__________________________________________________________
 #Main Loop
 #----------------------------------------------------------
+
+
+
+
 
 
 while driver.step() != -1:
@@ -274,8 +305,10 @@ while driver.step() != -1:
             current_steering = TURN_ANGLE
 
     else:
-    
+    #__________________________________________________________________________
     #DUAL CAMERA LANE KEEPING
+    #--------------------------------------------------------------------------
+    
         current_speed = 10.0
         
         error = 0.0
@@ -296,7 +329,11 @@ while driver.step() != -1:
         
         #SET total_error = 0, visible_cameras = 0
         
+        
+        #___________________________________________________
         #PROCESS RIGHT CAMERA:
+        #---------------------------------------------------
+        
             #scan the bottom right like before
             #Code stays the same as previous
         err_r, memory_bottom_x_r, calibrated_x_r, frames_missing_r, pixel_count_right, avg_x_r = \
@@ -307,7 +344,13 @@ while driver.step() != -1:
             error += err_r
             visible_cameras += 1
             last_average_x = avg_x_r 
+            
+            
+        #__________________________________________________
         #PROCESS LEFT CAMERA:
+        #--------------------------------------------------
+            
+            
             #Continue the code with the Right camera and average out error
             
         err_l, memory_bottom_x_l, calibrated_x_l, frames_missing_l, pixel_count_left, avg_x_l = \
@@ -316,8 +359,14 @@ while driver.step() != -1:
         
         if pixel_count_left > 0:
             error += err_l
-            visible_cameras += 1        
+            visible_cameras += 1    
+            
+        
+        #__________________________________________________
         #DUAL PID
+        #--------------------------------------------------
+        
+        
             #If visible_cameras > 0:
             #average error = total_error / visible_cameras
             #Apply the pid formula to error to get the steering angle just like before
