@@ -87,7 +87,7 @@ distance_to_target = 999.0
 calibrated_x_r = None
 calibrated_x_l = None
 frames_since_any_light = 999
-frames_seeing_red = 0
+
 #------------------------------------------------------
 # TRAFFIC LIGHTS
 #______________________________________________________
@@ -221,7 +221,8 @@ def scan_camera(image, x_start, x_end, width, height, memory_x, calibrated_x, fr
     
     
 def update_traffic(light, state, frames_red):
-    if light == "GREEN": return "GO", 0
+    if light == "RED": return "STOP", 0
+    elif light == "GREEN": return "GO", 0
     elif light == "YELLOW": return ("STOP" if state == "STOP" else "SLOW"), 0
     if state == "STOP":
         frames_red += 1
@@ -421,14 +422,7 @@ while driver.step() != -1:
                 #continue with speed
                 #print "GREEN LIGHT"
             light = detect_traffic_light(image_top, top_width, top_height)
-            if light == "RED":
-                frames_seeing_red += 1
-                if frames_seeing_red > 100:
-                    traffic_state = "STOP"
-                    frames_since_red = 0
-            else:
-                frames_seeing_red = 0
-                traffic_state, frames_since_red = update_traffic(light, traffic_state, frames_since_red)
+            traffic_state, frames_since_red = update_traffic(light, traffic_state, frames_since_red)
             if light is not None: frames_since_any_light = 0
             else: frames_since_any_light += 1
             
