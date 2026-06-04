@@ -10,6 +10,25 @@
 - **Operating System:**
 - **The World File:**
 
+
+## SHOWCASING VIDEOS:
+
+<video width="640" height="480" controls>
+  <source src="videos/Car1.mov" type="video/quicktime">
+  Your browser does not support the video tag.
+</video>
+
+<video width="640" height="480" controls>
+  <source src="videos/Car2.mov" type="video/quicktime">
+  Your browser does not support the video tag.
+</video>
+
+<video width="640" height="480" controls>
+  <source src="videos/Car3.mov" type="video/quicktime">
+  Your browser does not support the video tag.
+</video>
+
+
 ## The Tech I Used:
 
 * **Language:** Python
