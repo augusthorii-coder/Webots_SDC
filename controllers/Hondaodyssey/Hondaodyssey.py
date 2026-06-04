@@ -360,7 +360,7 @@ while driver.step() != -1:
         if pixel_count_left > 0:
             error += err_l
             visible_cameras += 1    
-            
+           
         
         #__________________________________________________
         #DUAL PID
@@ -369,7 +369,7 @@ while driver.step() != -1:
         
             #If visible_cameras > 0:
             #average error = total_error / visible_cameras
-            #Apply the pid formula to error to get the steering angle just like before
+            #Apply the pid formula to error to et the steering angle just like before
             #Possibly reduce the speed on each corner depending on later tests
             #save the errors for memory
         if visible_cameras > 0:
@@ -430,7 +430,7 @@ while driver.step() != -1:
             else: 
                 last_loc = -1
             current_steering = abs(last_steering) * 2 + 1 #* last_loc
-            current_speed = 10.0
+            current_speed = 20.0
             
             
             #target_x_r = width * 0.75
